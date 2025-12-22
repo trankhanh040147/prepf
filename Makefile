@@ -9,7 +9,7 @@ BUILD_TIME=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
 GIT_COMMIT=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
 # Linker flags
-LDFLAGS=-ldflags "-X main.Version=$(VERSION) -X main.BuildTime=$(BUILD_TIME) -X main.GitCommit=$(GIT_COMMIT)"
+LDFLAGS=-ldflags "-X github.com/trankhanh040147/prepf/internal/cli.Version=$(VERSION) -X github.com/trankhanh040147/prepf/internal/cli.BuildTime=$(BUILD_TIME) -X github.com/trankhanh040147/prepf/internal/cli.GitCommit=$(GIT_COMMIT)"
 
 .PHONY: all build run clean test lint install uninstall reinstall help
 

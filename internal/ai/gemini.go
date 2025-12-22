@@ -1,11 +1,13 @@
 package ai
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -119,28 +121,33 @@ func (c *Client) Stream(ctx context.Context, prompt string) (<-chan StreamChunk,
 			return
 		}
 
-		// Stream response
-		buf := make([]byte, 4096)
-		for {
+		// Stream response with a scanner
+		scanner := bufio.NewScanner(resp.Body)
+		for scanner.Scan() {
 			select {
 			case <-ctx.Done():
 				ch <- StreamChunk{Err: fmt.Errorf("context cancelled: %w", ctx.Err())}
 				return
 			default:
-				n, err := resp.Body.Read(buf)
-				if err == io.EOF {
-					ch <- StreamChunk{Done: true}
-					return
-				}
-				if err != nil {
-					ch <- StreamChunk{Err: fmt.Errorf("read response: %w", err)}
-					return
-				}
-				if n > 0 {
-					ch <- StreamChunk{Text: string(buf[:n])}
+				line := scanner.Text()
+				// Parse SSE format: check for "data: " prefix
+				if text, found := strings.CutPrefix(line, "data: "); found {
+					var streamResp StreamResponse
+					if err := sonic.Unmarshal([]byte(text), &streamResp); err == nil {
+						if len(streamResp.Candidates) > 0 && len(streamResp.Candidates[0].Content.Parts) > 0 {
+							ch <- StreamChunk{Text: streamResp.Candidates[0].Content.Parts[0].Text}
+						}
+					}
 				}
 			}
 		}
+
+		if err := scanner.Err(); err != nil {
+			ch <- StreamChunk{Err: fmt.Errorf("read response stream: %w", err)}
+			return
+		}
+
+		ch <- StreamChunk{Done: true}
 	}()
 
 	return ch, nil
@@ -151,3 +158,4 @@ func (c *Client) GetTokenUsage() (int, int) {
 	// Placeholder - actual implementation would track tokens
 	return 0, 0
 }
+

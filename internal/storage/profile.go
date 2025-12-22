@@ -96,16 +96,12 @@ type ProfileSaveError struct {
 	Err error
 }
 
-// SafeUpdate updates profile with safe mutation
+// SafeUpdate updates profile with safe mutation.
+// The original ID is cached for lookup/persistence purposes, but updates may modify the ID if needed.
 func (s *Store) SafeUpdate(profile *Profile, updates func(*Profile)) error {
-	// Cache original ID before editing
-	originalID := profile.ID
-
-	// Apply updates
+	// Apply updates (may modify ID)
 	updates(profile)
 
-	// Save with cached ID (in case updates modified ID)
-	profile.ID = originalID
 	return s.Save(profile)
 }
 

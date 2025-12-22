@@ -1,22 +1,31 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/trankhanh040147/prepf/internal/config"
 )
 
+type configKey struct{}
+
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Manage configuration",
 	Long:  "View or edit configuration settings",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		cfg, err := config.Load()
 		if err != nil {
 			return fmt.Errorf("load config: %w", err)
 		}
+		cmd.SetContext(context.WithValue(cmd.Context(), configKey{}, cfg))
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cfg := cmd.Context().Value(configKey{}).(*config.Config)
 
 		cmd.Printf("Config Directory: %s\n", cfg.ConfigDir)
 		cmd.Printf("Profile Path: %s\n", cfg.ProfilePath)
@@ -45,12 +54,9 @@ func init() {
 		Use:   "edit",
 		Short: "Edit configuration file",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := config.Load()
-			if err != nil {
-				return fmt.Errorf("load config: %w", err)
-			}
+			cfg := cmd.Context().Value(configKey{}).(*config.Config)
 
-			configPath := cfg.ConfigDir + "/config.yaml"
+			configPath := filepath.Join(cfg.ConfigDir, config.ConfigFileName)
 			editor := cfg.Editor
 
 			// Use system editor

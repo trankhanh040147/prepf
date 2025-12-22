@@ -1,6 +1,9 @@
 package ui
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -97,7 +100,16 @@ func (m *BaseModel) renderHelp() string {
 		BorderForeground(lipgloss.Color("62")).
 		Padding(1, 2)
 
-	content := HelpText() + "\n\n" + m.keys.FullHelp()[0][0].Help().Key + " - " + m.keys.FullHelp()[0][0].Help().Desc
+	var helpBuilder strings.Builder
+	helpBuilder.WriteString(HelpText() + "\n\n")
+
+	for _, group := range m.keys.FullHelp() {
+		for _, kb := range group {
+			helpBuilder.WriteString(fmt.Sprintf("%-18s %s\n", kb.Help().Key, kb.Help().Desc))
+		}
+	}
+
+	content := strings.TrimSpace(helpBuilder.String())
 
 	return Center(helpStyle.Render(content), m.width, m.height)
 }

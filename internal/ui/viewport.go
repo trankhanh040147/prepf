@@ -52,10 +52,10 @@ func (v *ViewportModel) SetSize(width, height int) {
 }
 
 // Update handles viewport messages
-func (v *ViewportModel) Update(msg tea.Msg) (ViewportModel, tea.Cmd) {
+func (v *ViewportModel) Update(msg tea.Msg) (*ViewportModel, tea.Cmd) {
 	var cmd tea.Cmd
 	v.viewport, cmd = v.viewport.Update(msg)
-	return *v, cmd
+	return v, cmd
 }
 
 // View renders the viewport

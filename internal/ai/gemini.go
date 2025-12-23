@@ -96,7 +96,7 @@ func (c *Client) Stream(ctx context.Context, prompt string) (<-chan StreamChunk,
 
 		url := fmt.Sprintf("%s/models/gemini-pro:streamGenerateContent?key=%s", c.baseURL, c.apiKey)
 
-		httpReq, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(reqBody))
+		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(reqBody))
 		if err != nil {
 			ch <- StreamChunk{Err: fmt.Errorf("create request: %w", err)}
 			return
@@ -145,7 +145,7 @@ func (c *Client) Stream(ctx context.Context, prompt string) (<-chan StreamChunk,
 			}
 		}
 
-		if err := scanner.Err(); err != nil {
+		if err = scanner.Err(); err != nil {
 			ch <- StreamChunk{Err: fmt.Errorf("read response stream: %w", err)}
 			return
 		}
@@ -161,4 +161,3 @@ func (c *Client) GetTokenUsage() (int, int) {
 	// Placeholder - actual implementation would track tokens
 	return 0, 0
 }
-

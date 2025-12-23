@@ -42,7 +42,6 @@ func setupViper() (string, error) {
 	viper.SetDefault(KeyAPIKey, "")
 	viper.SetDefault(KeyTimeout, DefaultTimeout)
 	viper.SetDefault(KeyEditor, getDefaultEditor())
-
 	// Environment variable overrides
 	viper.SetEnvPrefix(EnvPrefix)
 	envVarMap := map[string]string{

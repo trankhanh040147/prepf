@@ -96,11 +96,14 @@ type ProfileSaveError struct {
 	Err error
 }
 
-// SafeUpdate updates profile with safe mutation.
-// The original ID is cached for lookup/persistence purposes, but updates may modify the ID if needed.
-func (s *Store) SafeUpdate(profile *Profile, updates func(*Profile)) error {
-	// Apply updates (may modify ID)
-	updates(profile)
+func (s *Store) SafeUpdateCmd(profile *Profile, updates func(*Profile)) tea.Cmd {
+	return func() tea.Msg {
+		// Apply updates (may modify ID)
+		updates(profile)
 
-	return s.Save(profile)
+		if err := s.Save(profile); err != nil {
+			return ProfileSaveError{Err: err}
+		}
+		return ProfileSaved{}
+	}
 }

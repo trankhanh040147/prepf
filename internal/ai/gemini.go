@@ -94,10 +94,6 @@ func (c *Client) Stream(ctx context.Context, prompt string) (<-chan StreamChunk,
 			return
 		}
 
-		// Create request with context
-		ctx, cancel := context.WithTimeout(ctx, c.timeout)
-		defer cancel()
-
 		url := fmt.Sprintf("%s/models/gemini-pro:streamGenerateContent?key=%s", c.baseURL, c.apiKey)
 
 		httpReq, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(reqBody))

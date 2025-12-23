@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -51,7 +52,9 @@ var configCmd = &cobra.Command{
 		}
 
 		// Unknown key - show error with fuzzy match suggestion
-		return newInvalidKeyError(key, lo.Keys(configKeyDisplayMap), "displayed")
+		keys := lo.Keys(configKeyDisplayMap)
+		slices.Sort(keys)
+		return newInvalidKeyError(key, keys, "displayed")
 	},
 }
 
@@ -140,6 +143,7 @@ func openEditor(editor, filePath string) error {
 func showAllConfig(cmd *cobra.Command, cfg *config.Config) error {
 	// Iterate over configKeyDisplayMap to ensure single source of truth
 	keys := lo.Keys(configKeyDisplayMap)
+	slices.Sort(keys)
 	lo.ForEach(keys, func(key string, _ int) {
 		configKeyDisplayMap[key](cmd, cfg)
 	})
@@ -206,7 +210,9 @@ var configKeySetterMap = map[string]func(*config.Config, string) error{
 func setConfigValue(cmd *cobra.Command, cfg *config.Config, key, value string) error {
 	setterFunc, ok := configKeySetterMap[key]
 	if !ok {
-		return newInvalidKeyError(key, lo.Keys(configKeySetterMap), "set")
+		keys := lo.Keys(configKeySetterMap)
+		slices.Sort(keys)
+		return newInvalidKeyError(key, keys, "set")
 	}
 
 	// Set the value

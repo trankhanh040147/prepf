@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	"github.com/mattn/go-isatty"
+	"github.com/samber/lo"
 	"github.com/spf13/viper"
 )
 
@@ -44,9 +45,14 @@ func setupViper() (string, error) {
 
 	// Environment variable overrides
 	viper.SetEnvPrefix(EnvPrefix)
-	viper.BindEnv(KeyAPIKey, EnvVarGeminiAPIKey)
-	viper.BindEnv(KeyTimeout, EnvVarTimeout)
-	viper.BindEnv(KeyEditor, EnvVarEditor)
+	envVarMap := map[string]string{
+		KeyAPIKey:  EnvVarGeminiAPIKey,
+		KeyTimeout: EnvVarTimeout,
+		KeyEditor:  EnvVarEditor,
+	}
+	lo.ForEach(lo.Entries(envVarMap), func(entry lo.Entry[string, string], _ int) {
+		viper.BindEnv(entry.Key, entry.Value)
+	})
 
 	return configDir, nil
 }

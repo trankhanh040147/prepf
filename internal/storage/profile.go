@@ -104,8 +104,3 @@ func (s *Store) SafeUpdate(profile *Profile, updates func(*Profile)) error {
 
 	return s.Save(profile)
 }
-
-// ValidateIndex checks if index is within bounds
-func ValidateIndex(idx int, length int) bool {
-	return idx >= 0 && idx < length
-}

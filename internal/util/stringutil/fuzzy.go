@@ -23,20 +23,18 @@ func FuzzyMatch(input string, validKeys []string) string {
 	}
 
 	// Use simple similarity scoring for fuzzy matching
-	bestMatch := ""
-	bestScore := 0.0
-
-	for _, key := range validKeys {
-		score := Similarity(inputLower, strings.ToLower(key))
-		if score > bestScore {
-			bestScore = score
-			bestMatch = key
-		}
-	}
+	bestMatch := lo.MaxBy(validKeys, func(a, b string) bool {
+		scoreA := Similarity(inputLower, strings.ToLower(a))
+		scoreB := Similarity(inputLower, strings.ToLower(b))
+		return scoreA > scoreB
+	})
 
 	// Only return a match if similarity is reasonable
-	if bestScore > MinFuzzyMatchScore {
-		return bestMatch
+	if bestMatch != "" {
+		bestScore := Similarity(inputLower, strings.ToLower(bestMatch))
+		if bestScore > MinFuzzyMatchScore {
+			return bestMatch
+		}
 	}
 
 	return ""

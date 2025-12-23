@@ -1,13 +1,13 @@
+version: "2"
 linters:
   enable:
     - errcheck
-    - gosimple
     - govet
     - ineffassign
     - staticcheck
-    - unused
-    - gofmt
-    - goimports
+    - revive
+    - gocritic
+    - misspell
 
 linters-settings:
   gofmt:
@@ -19,4 +19,3 @@ issues:
   exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
-

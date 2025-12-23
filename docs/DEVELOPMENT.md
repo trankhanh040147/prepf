@@ -49,7 +49,7 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 
 # v0.1.0 - Foundation
 
-**Status:** In Progress
+**Status:** In review
 
 **Goal:** Establish core infrastructure following project principles (UX First, Action > Theory).
 
@@ -60,11 +60,21 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
     - [ ] Error propagation to `main` only
 
 ### Config Engine
-- [ ] **Viper Integration:**
-    - [ ] Config path: `~/.config/prepf/config.yaml` (use `os.MkdirAll` for parent dirs)
-    - [ ] Sensible defaults (API keys, timeouts, editor path)
-    - [ ] Platform detection: `runtime.GOOS` for editor/open commands
-    - [ ] Environment variable overrides
+- [x] **Viper Integration:**
+    - [x] Config path: `~/.config/prepf/config.yaml` (use `os.MkdirAll` for parent dirs)
+    - [x] Sensible defaults (API keys, timeouts, editor path)
+    - [x] Platform detection: `runtime.GOOS` for editor/open commands
+    - [x] Environment variable overrides
+- [x] **Config Command (`prepf config`):**
+    - [x] View all config: `prepf config` (no args)
+    - [x] View specific key: `prepf config <key>` (e.g., `prepf config api_key`)
+    - [x] Set config value: `prepf config <key> <value>` (e.g., `prepf config timeout 60`)
+    - [x] Edit config file: `prepf config edit` (opens editor, creates file if missing)
+    - [x] Fuzzy matching for typos (e.g., `api` → suggests `api_key`)
+    - [x] Config save functionality with validation
+    - [x] Initial config file template with comments
+    - [x] Read-only keys (no_color, is_tty, config_dir, profile_path) display-only
+    - [x] Writable keys (api_key, timeout, editor) with validation
 
 ### TUI Shell (Bubbletea)
 - [ ] **Base Model:**
@@ -103,16 +113,18 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
     - [ ] Index safety: verify bounds before access
 
 ### Code Quality
-- [ ] **Structure:**
-    - [ ] Small, modular files
-    - [ ] Constants in `[...constants.go]` files (no hardcoding)
-    - [ ] AI client isolation (separate package)
-- [ ] **Standards:**
-    - [ ] Run `gofmt -s`, `go vet`, `staticcheck`
-    - [ ] Target complexity ≤15 per function
-    - [ ] Memory safety: never `&m[k]`, assign to var first
+- [x] **Structure:**
+    - [x] Small, modular files
+    - [x] Constants in `[...constants.go]` files (no hardcoding)
+    - [x] AI client isolation (separate package)
+    - [x] Utility packages (stringutil for fuzzy matching)
+- [x] **Standards:**
+    - [x] Run `gofmt -s`, `go vet`, `staticcheck`
+    - [x] Target complexity ≤15 per function
+    - [x] Memory safety: never `&m[k]`, assign to var first
+    - [x] Use `samber/lo` for functional operations (filtering, mapping, finding)
 - [ ] **Dependencies:**
-    - [ ] Pin major versions in `go.mod`
+    - [x] Pin major versions in `go.mod`
     - [ ] Run `govulncheck` before commit
 
 ### Testing Requirements
@@ -123,6 +135,44 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 
 ---
 
+## v0.1.0 - Config Command Enhancements
+
+**Status:** Completed
+
+**Features Implemented:**
+
+### Config Management
+- **View Config:** `prepf config` shows all configuration values
+- **View Specific Key:** `prepf config <key>` displays single config value
+  - Supported keys: `api_key`, `timeout`, `editor`, `no_color`, `is_tty`, `config_dir`, `profile_path`
+- **Set Config Value:** `prepf config <key> <value>` sets and saves config
+  - Writable keys: `api_key`, `timeout`, `editor`
+  - Validation: non-empty strings, positive integers for timeout
+  - Auto-saves to `~/.config/prepf/config.yaml`
+- **Edit Config File:** `prepf config edit` opens config file in editor
+  - Creates config file with template if missing
+  - Falls back to `$EDITOR` env var if editor not configured
+  - Handles editor command parsing (supports arguments)
+
+### UX Improvements
+- **Fuzzy Matching:** Typo-tolerant key lookup
+  - Examples: `api`/`ap`/`apik` → suggests `api_key`
+  - Uses substring matching (prefix/suffix) and similarity scoring
+  - Moved to `internal/util/stringutil` package for reusability
+- **Error Messages:** Helpful errors with suggestions
+  - Shows available keys when invalid key provided
+  - Distinguishes between "cannot be displayed" vs "cannot be set"
+- **Single Source of Truth:** All display logic uses `cfg.*` struct values
+  - Config keys defined as constants in `internal/config/constants.go`
+  - No hardcoded strings in CLI code
+
+### Code Quality
+- **Functional Programming:** Uses `samber/lo` for slice operations
+- **Modular Design:** Fuzzy matching extracted to utility package
+- **Constants:** All config keys, env vars, defaults in constants file
+- **Error Handling:** Proper error wrapping with context
+
+---
 
 # v0.1.1 - Mock Module (The Gauntlet)
 

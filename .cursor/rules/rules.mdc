@@ -46,11 +46,11 @@ alwaysApply: true
 - **Functional Helpers (`lo`):**
   - **Strictly** use `samber/lo` for slice/map filtering, mapping, and finding.
   - **Ban** `for` loops for simple data transformation.
-- **Index Safety:** Verify bounds (`0 ≤ idx < len`) before access; explicitly handle empty slices (reset index to -1 or skip).
+- **Index Safety:** Verify bounds (`0 ≤ idx < len`) before access; explicitly handle empty slices (reset index to -1 or skip). Always check length after `strings.Fields`, `strings.Split`, or similar operations before accessing `[0]`.
 - **Safe Mutation:** Cache original IDs/Keys **before** editing; execute deletions against the cached values, never against modified properties.
 - **JSON:** Use `bytedance/sonic` for all marshalling. **Ban** `encoding/json`.
 - **Concurrency:** Use `errgroup.Group` (propagates errors) over `sync.WaitGroup`.
-- **Input Safety:** Single `bufio.NewReader`. **Ban** `fmt.Scanln`. Use `reader.ReadString`.
+- **Input Safety:** Single `bufio.NewReader`. **Ban** `fmt.Scanln`, `fmt.Sscanf`. Use `reader.ReadString` for input, `strconv` for parsing.
 - **Flow:** Use `Cobra.RunE`. Return errors to `main`. **No** `os.Exit` in library code. Listen for `os.Interrupt`.
 - **Constructors:** Return pointers (`func NewType(...) *Type`) for stateful types.
 - **Memory Safety:** **Never** address map index directly. Pre-allocate slices.
@@ -59,6 +59,10 @@ alwaysApply: true
 
 ### 4. System & Configuration
 - **Config:** YAML in `~/.config/prepf/config.yaml`. Use `os.MkdirAll`. Set defaults.
+- **Viper:** Initialize once in `Load()`. `Save()` must not call `setupViper()` or `ReadInConfig()`. Use `viper.ConfigFileUsed()` for path, fallback to `Config.ConfigDir`.
+- **Config Keys:** Use constants from `config` package (`KeyAPIKey`, `KeyTimeout`, etc.). **Ban** hardcoded strings like `"api_key"` in Viper calls, map keys, or templates.
+- **Config Display:** Display logic must use `cfg.*` struct values (single source of truth). **Ban** re-checking `os.Getenv()` in display functions; Viper already resolved precedence (file > env > default).
+- **YAML Errors:** Warn on `stderr` for malformed config files. Distinguish file-not-found (silent) from parse errors (warn).
 - **Platform:** Use `runtime.GOOS` for generic commands (open/explorer) and `$EDITOR`.
 - **Streams:** Output → `os.Stdout`. Logs/Errors → `os.Stderr`.
 - **TTY:** Check `isatty(stdout)`. Disable colors if `NO_COLOR` or piping.

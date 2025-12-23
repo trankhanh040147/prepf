@@ -4,10 +4,15 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 
+	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"github.com/trankhanh040147/prepf/internal/config"
+	"github.com/trankhanh040147/prepf/internal/util/stringutil"
 )
 
 type configKey struct{}
@@ -27,16 +32,40 @@ var configCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg := cmd.Context().Value(configKey{}).(*config.Config)
 
-		cmd.Printf("Config Directory: %s\n", cfg.ConfigDir)
-		cmd.Printf("Profile Path: %s\n", cfg.ProfilePath)
-		cmd.Printf("API Key: %s\n", maskAPIKey(cfg.APIKey))
-		cmd.Printf("Timeout: %d seconds\n", cfg.Timeout)
-		cmd.Printf("Editor: %s\n", cfg.Editor)
-		cmd.Printf("No Color: %v\n", cfg.NoColor)
-		cmd.Printf("Is TTY: %v\n", cfg.IsTTY)
+		// If no args, show all config
+		if len(args) == 0 {
+			return showAllConfig(cmd, cfg)
+		}
 
-		return nil
+		key := args[0]
+
+		// If 2 args, set value
+		if len(args) == 2 {
+			return setConfigValue(cmd, cfg, key, args[1])
+		}
+
+		// If 1 arg, show value
+		if displayFunc, ok := configKeyDisplayMap[key]; ok {
+			displayFunc(cmd, cfg)
+			return nil
+		}
+
+		// Unknown key - show error with fuzzy match suggestion
+		return newInvalidKeyError(key, lo.Keys(configKeyDisplayMap), "displayed")
 	},
+}
+
+// newInvalidKeyError creates a standardized error for unknown/unsupported keys with fuzzy match suggestions
+func newInvalidKeyError(providedKey string, validKeys []string, action string) error {
+	availableKeysStr := strings.Join(validKeys, ", ")
+	msg := fmt.Sprintf("key '%s' cannot be %s", providedKey, action)
+
+	// Add fuzzy match suggestion if available
+	if closest := stringutil.FuzzyMatch(providedKey, validKeys); closest != "" {
+		msg += fmt.Sprintf(", did you mean '%s'?", closest)
+	}
+
+	return fmt.Errorf("%s. Available keys: %s", msg, availableKeysStr)
 }
 
 func maskAPIKey(key string) string {
@@ -67,10 +96,131 @@ func init() {
 				}
 			}
 
-			// Open config file in editor
-			// This is a placeholder - actual implementation would use exec.Command
-			cmd.Printf("Opening %s with %s\n", configPath, editor)
-			return nil
+			return openEditor(editor, configPath)
 		},
 	})
+}
+
+// openEditor opens the config file in the specified editor
+func openEditor(editor, filePath string) error {
+	// Ensure config file exists (create with template if not)
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		initialContent := config.InitialConfigContent()
+		if err := os.WriteFile(filePath, []byte(initialContent), 0644); err != nil {
+			return fmt.Errorf("create config file: %w", err)
+		}
+	}
+
+	// Parse editor command (handle cases like "nvim", "vi", "open -a TextEdit")
+	editorParts := strings.Fields(editor)
+	if len(editorParts) == 0 {
+		return fmt.Errorf("invalid editor command: contains only whitespace")
+	}
+	editorCmd := editorParts[0]
+	editorArgs := editorParts[1:]
+
+	// Standard editor: append file path as argument
+	editorArgs = append(editorArgs, filePath)
+
+	cmd := exec.Command(editorCmd, editorArgs...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("execute editor: %w", err)
+	}
+
+	return nil
+}
+
+// showAllConfig displays all configuration values
+func showAllConfig(cmd *cobra.Command, cfg *config.Config) error {
+	// Iterate over configKeyDisplayMap to ensure single source of truth
+	keys := lo.Keys(configKeyDisplayMap)
+	lo.ForEach(keys, func(key string, _ int) {
+		configKeyDisplayMap[key](cmd, cfg)
+	})
+	return nil
+}
+
+// configKeyDisplayMap maps config keys to their display functions
+// Display functions show only cfg.* values (single source of truth after Viper processing)
+// Read-only keys (no_color, is_tty, config_dir, profile_path) are display-only and not in configKeySetterMap
+var configKeyDisplayMap = map[string]func(*cobra.Command, *config.Config){
+	config.KeyAPIKey: func(cmd *cobra.Command, cfg *config.Config) {
+		cmd.Printf("API Key: %s\n", maskAPIKey(cfg.APIKey))
+	},
+	config.KeyTimeout: func(cmd *cobra.Command, cfg *config.Config) {
+		cmd.Printf("Timeout: %d seconds\n", cfg.Timeout)
+	},
+	config.KeyEditor: func(cmd *cobra.Command, cfg *config.Config) {
+		cmd.Printf("Editor: %s\n", cfg.Editor)
+	},
+	"no_color": func(cmd *cobra.Command, cfg *config.Config) {
+		cmd.Printf("No Color: %v\n", cfg.NoColor)
+	},
+	"is_tty": func(cmd *cobra.Command, cfg *config.Config) {
+		cmd.Printf("Is TTY: %v\n", cfg.IsTTY)
+	},
+	"config_dir": func(cmd *cobra.Command, cfg *config.Config) {
+		cmd.Printf("Config Directory: %s\n", cfg.ConfigDir)
+	},
+	"profile_path": func(cmd *cobra.Command, cfg *config.Config) {
+		cmd.Printf("Profile Path: %s\n", cfg.ProfilePath)
+	},
+}
+
+// configKeySetterMap maps config keys to their setter functions (only writable keys)
+var configKeySetterMap = map[string]func(*config.Config, string) error{
+	config.KeyAPIKey: func(cfg *config.Config, value string) error {
+		if value == "" {
+			return fmt.Errorf("api_key cannot be empty")
+		}
+		cfg.APIKey = value
+		return nil
+	},
+	config.KeyTimeout: func(cfg *config.Config, value string) error {
+		timeout, err := strconv.Atoi(value)
+		if err != nil {
+			return fmt.Errorf("timeout must be a number: %w", err)
+		}
+		if timeout <= 0 {
+			return fmt.Errorf("timeout must be greater than 0")
+		}
+		cfg.Timeout = timeout
+		return nil
+	},
+	config.KeyEditor: func(cfg *config.Config, value string) error {
+		if value == "" {
+			return fmt.Errorf("editor cannot be empty")
+		}
+		cfg.Editor = value
+		return nil
+	},
+}
+
+// setConfigValue sets a config value and saves it
+func setConfigValue(cmd *cobra.Command, cfg *config.Config, key, value string) error {
+	setterFunc, ok := configKeySetterMap[key]
+	if !ok {
+		return newInvalidKeyError(key, lo.Keys(configKeySetterMap), "set")
+	}
+
+	// Set the value
+	if err := setterFunc(cfg, value); err != nil {
+		return fmt.Errorf("invalid value for %s: %w", key, err)
+	}
+
+	// Save config
+	if err := config.Save(cfg); err != nil {
+		return fmt.Errorf("save config: %w", err)
+	}
+
+	// Show updated value
+	if displayFunc, ok := configKeyDisplayMap[key]; ok {
+		displayFunc(cmd, cfg)
+	}
+
+	return nil
 }

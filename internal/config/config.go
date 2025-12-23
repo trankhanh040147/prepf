@@ -21,16 +21,16 @@ type Config struct {
 	ProfilePath string
 }
 
-// Load initializes and loads configuration
-func Load() (*Config, error) {
+// setupViper initializes Viper configuration
+func setupViper() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return nil, fmt.Errorf("get home directory: %w", err)
+		return "", fmt.Errorf("get home directory: %w", err)
 	}
 
 	configDir := filepath.Join(homeDir, ".config", ConfigDirName)
 	if err := os.MkdirAll(configDir, 0755); err != nil {
-		return nil, fmt.Errorf("create config directory: %w", err)
+		return "", fmt.Errorf("create config directory: %w", err)
 	}
 
 	viper.SetConfigName(ConfigFileName)
@@ -38,20 +38,36 @@ func Load() (*Config, error) {
 	viper.AddConfigPath(configDir)
 
 	// Set defaults
-	viper.SetDefault("api_key", "")
-	viper.SetDefault("timeout", DefaultTimeout)
-	viper.SetDefault("editor", getDefaultEditor())
+	viper.SetDefault(KeyAPIKey, "")
+	viper.SetDefault(KeyTimeout, DefaultTimeout)
+	viper.SetDefault(KeyEditor, getDefaultEditor())
 
 	// Environment variable overrides
-	viper.SetEnvPrefix("PREPF")
-	viper.BindEnv("api_key", EnvVarGeminiAPIKey)
-	viper.BindEnv("timeout")
-	viper.BindEnv("editor", EnvVarEditor)
+	viper.SetEnvPrefix(EnvPrefix)
+	viper.BindEnv(KeyAPIKey, EnvVarGeminiAPIKey)
+	viper.BindEnv(KeyTimeout, EnvVarTimeout)
+	viper.BindEnv(KeyEditor, EnvVarEditor)
 
-	// Read config file (ignore if not exists)
+	return configDir, nil
+}
+
+// Load initializes and loads configuration
+func Load() (*Config, error) {
+	configDir, err := setupViper()
+	if err != nil {
+		return nil, err
+	}
+
+	// Read config file (ignore if not exists, warn if malformed)
 	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return nil, fmt.Errorf("read config file: %w", err)
+		// If file not found, continue with defaults
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			// File doesn't exist, use defaults
+		} else {
+			// File exists but is malformed - warn user but continue with defaults
+			// This allows 'config edit' to work even with corrupted YAML
+			fmt.Fprintf(os.Stderr, "warning: config file is malformed: %v\n", err)
+			fmt.Fprintf(os.Stderr, "warning: using default values. Run 'prepf config edit' to fix.\n")
 		}
 	}
 
@@ -60,9 +76,9 @@ func Load() (*Config, error) {
 	noColor := os.Getenv(EnvVarNoColor) != "" || !isTTY
 
 	cfg := &Config{
-		APIKey:      viper.GetString("api_key"),
-		Timeout:     viper.GetInt("timeout"),
-		Editor:      viper.GetString("editor"),
+		APIKey:      viper.GetString(KeyAPIKey),
+		Timeout:     viper.GetInt(KeyTimeout),
+		Editor:      viper.GetString(KeyEditor),
 		NoColor:     noColor,
 		IsTTY:       isTTY,
 		ConfigDir:   configDir,
@@ -70,6 +86,27 @@ func Load() (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+// Save saves configuration to file
+func Save(cfg *Config) error {
+	// Set only writable fields on the existing viper instance
+	viper.Set(KeyAPIKey, cfg.APIKey)
+	viper.Set(KeyTimeout, cfg.Timeout)
+	viper.Set(KeyEditor, cfg.Editor)
+
+	// Get config path from viper if it was read successfully, otherwise construct it
+	configPath := viper.ConfigFileUsed()
+	if configPath == "" {
+		// Fallback if config file didn't exist before
+		configPath = filepath.Join(cfg.ConfigDir, ConfigFileName)
+	}
+
+	if err := viper.WriteConfigAs(configPath); err != nil {
+		return fmt.Errorf("write config file: %w", err)
+	}
+
+	return nil
 }
 
 // getDefaultEditor returns platform-specific default editor
@@ -84,4 +121,12 @@ func getDefaultEditor() string {
 	default:
 		return DefaultEditorLinux
 	}
+}
+
+// InitialConfigContent returns the initial YAML content for a new config file
+func InitialConfigContent() string {
+	return fmt.Sprintf(`%s%s: ""
+%s: %d
+%s: ""
+`, ConfigFileHeader, KeyAPIKey, KeyTimeout, DefaultTimeout, KeyEditor)
 }

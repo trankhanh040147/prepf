@@ -1,12 +1,21 @@
 package config
 
 const (
+	// EnvPrefix is the environment variable prefix for prepf
+	EnvPrefix = "PREPF"
 	// EnvVarGeminiAPIKey is the environment variable name for Gemini API key
 	EnvVarGeminiAPIKey = "GEMINI_API_KEY"
 	// EnvVarNoColor disables color output
 	EnvVarNoColor = "NO_COLOR"
 	// EnvVarEditor is the environment variable for editor path
 	EnvVarEditor = "EDITOR"
+	// EnvVarTimeout is the environment variable for timeout (PREPF_TIMEOUT)
+	EnvVarTimeout = "PREPF_TIMEOUT"
+
+	// Config key names (used in Viper and YAML)
+	KeyAPIKey = "api_key"
+	KeyTimeout = "timeout"
+	KeyEditor = "editor"
 
 	// ConfigDirName is the config directory name
 	ConfigDirName = "prepf"
@@ -25,4 +34,11 @@ const (
 	DefaultEditorWindows = "notepad"
 	// DefaultMinWidth is the minimum terminal width
 	DefaultMinWidth = 80
+	// ConfigFileHeader is the header comment for config files
+	ConfigFileHeader = `# prepf configuration
+# Example:
+# api_key: "your-api-key-here"
+# timeout: 30
+# editor: "nvim"
+`
 )

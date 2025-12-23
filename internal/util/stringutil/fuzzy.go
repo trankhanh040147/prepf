@@ -1,6 +1,10 @@
 package stringutil
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/samber/lo"
+)
 
 // MinFuzzyMatchScore is the minimum similarity score required for a fuzzy match
 const MinFuzzyMatchScore = 0.3
@@ -11,11 +15,11 @@ func FuzzyMatch(input string, validKeys []string) string {
 	inputLower := strings.ToLower(input)
 
 	// Check for substring matches (prefix/suffix) - highest priority
-	for _, key := range validKeys {
+	if match, ok := lo.Find(validKeys, func(key string) bool {
 		keyLower := strings.ToLower(key)
-		if strings.HasPrefix(keyLower, inputLower) || strings.HasPrefix(inputLower, keyLower) {
-			return key
-		}
+		return strings.HasPrefix(keyLower, inputLower) || strings.HasPrefix(inputLower, keyLower)
+	}); ok {
+		return match
 	}
 
 	// Use simple similarity scoring for fuzzy matching

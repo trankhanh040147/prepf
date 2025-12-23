@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/samber/lo"
 	"github.com/trankhanh040147/prepf/internal/config"
 )
 
@@ -25,7 +26,7 @@ type BaseModel struct {
 	state         State
 	previousState State
 	helpVisible   bool
-	viewport      ViewportModel
+	viewport      *ViewportModel
 	width         int
 	height        int
 	noColor       bool
@@ -100,16 +101,13 @@ func (m *BaseModel) renderHelp() string {
 		BorderForeground(lipgloss.Color("62")).
 		Padding(1, 2)
 
-	var helpBuilder strings.Builder
-	helpBuilder.WriteString(HelpText() + "\n\n")
+	// Flatten nested key binding groups and map to formatted strings
+	allBindings := lo.Flatten(m.keys.FullHelp())
+	helpLines := lo.Map(allBindings, func(kb key.Binding, _ int) string {
+		return fmt.Sprintf("%-18s %s", kb.Help().Key, kb.Help().Desc)
+	})
 
-	for _, group := range m.keys.FullHelp() {
-		for _, kb := range group {
-			helpBuilder.WriteString(fmt.Sprintf("%-18s %s\n", kb.Help().Key, kb.Help().Desc))
-		}
-	}
-
-	content := strings.TrimSpace(helpBuilder.String())
+	content := HelpText() + "\n\n" + strings.Join(helpLines, "\n")
 
 	return Center(helpStyle.Render(content), m.width, m.height)
 }

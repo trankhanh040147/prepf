@@ -17,6 +17,12 @@ const (
 	KeyTimeout = "timeout"
 	KeyEditor = "editor"
 
+	// Read-only config keys (display-only, not settable)
+	KeyNoColor    = "no_color"
+	KeyIsTTY      = "is_tty"
+	KeyConfigDir  = "config_dir"
+	KeyProfilePath = "profile_path"
+
 	// ConfigDirName is the config directory name
 	ConfigDirName = "prepf"
 	// ConfigFileName is the config file name

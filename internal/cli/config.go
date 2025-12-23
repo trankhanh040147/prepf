@@ -88,7 +88,9 @@ func init() {
 			configPath := filepath.Join(cfg.ConfigDir, config.ConfigFileName)
 			editor := cfg.Editor
 
-			// Use system editor
+			// Fallback to environment variable if editor not in config file
+			// This allows 'config edit' to work even when config file doesn't exist yet
+			// or when editor hasn't been configured via 'prepf config editor <path>'
 			if editor == "" {
 				editor = os.Getenv(config.EnvVarEditor)
 				if editor == "" {
@@ -157,16 +159,16 @@ var configKeyDisplayMap = map[string]func(*cobra.Command, *config.Config){
 	config.KeyEditor: func(cmd *cobra.Command, cfg *config.Config) {
 		cmd.Printf("Editor: %s\n", cfg.Editor)
 	},
-	"no_color": func(cmd *cobra.Command, cfg *config.Config) {
+	config.KeyNoColor: func(cmd *cobra.Command, cfg *config.Config) {
 		cmd.Printf("No Color: %v\n", cfg.NoColor)
 	},
-	"is_tty": func(cmd *cobra.Command, cfg *config.Config) {
+	config.KeyIsTTY: func(cmd *cobra.Command, cfg *config.Config) {
 		cmd.Printf("Is TTY: %v\n", cfg.IsTTY)
 	},
-	"config_dir": func(cmd *cobra.Command, cfg *config.Config) {
+	config.KeyConfigDir: func(cmd *cobra.Command, cfg *config.Config) {
 		cmd.Printf("Config Directory: %s\n", cfg.ConfigDir)
 	},
-	"profile_path": func(cmd *cobra.Command, cfg *config.Config) {
+	config.KeyProfilePath: func(cmd *cobra.Command, cfg *config.Config) {
 		cmd.Printf("Profile Path: %s\n", cfg.ProfilePath)
 	},
 }

@@ -17,13 +17,23 @@ type ViewportModel struct {
 }
 
 // NewViewport creates a new viewport model
-func NewViewport() ViewportModel {
+func NewViewport() *ViewportModel {
 	vp := viewport.New(0, 0)
-	return ViewportModel{
+	return &ViewportModel{
 		viewport: vp,
 		width:    config.DefaultMinWidth,
 		height:   20,
 	}
+}
+
+// sanitizeDimensions guards against negative values and applies default width
+func sanitizeDimensions(width, height int) (int, int) {
+	w := int(math.Max(0, float64(width)))
+	h := int(math.Max(0, float64(height)))
+	if w == 0 {
+		w = config.DefaultMinWidth
+	}
+	return w, h
 }
 
 // SetContent sets viewport content
@@ -33,22 +43,15 @@ func (v *ViewportModel) SetContent(content string) {
 
 // SetSize sets viewport size with safety checks
 func (v *ViewportModel) SetSize(width, height int) {
-	// Guard against negative values
-	width = int(math.Max(0, float64(width)))
-	height = int(math.Max(0, float64(height)))
-
-	// Default to minimum width if zero
-	if width == 0 {
-		width = config.DefaultMinWidth
-	}
-	if height == 0 {
-		height = 20
+	w, h := sanitizeDimensions(width, height)
+	if h == 0 {
+		h = 20
 	}
 
-	v.width = width
-	v.height = height
-	v.viewport.Width = width
-	v.viewport.Height = height
+	v.width = w
+	v.height = h
+	v.viewport.Width = w
+	v.viewport.Height = h
 }
 
 // Update handles viewport messages
@@ -75,14 +78,6 @@ func (v *ViewportModel) Height() int {
 
 // Center centers content using lipgloss.Place
 func Center(content string, width, height int) string {
-	// Guard against negative values
-	width = int(math.Max(0, float64(width)))
-	height = int(math.Max(0, float64(height)))
-
-	// Default to minimum width if zero
-	if width == 0 {
-		width = config.DefaultMinWidth
-	}
-
-	return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, content)
+	w, h := sanitizeDimensions(width, height)
+	return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, content)
 }

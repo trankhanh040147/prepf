@@ -116,8 +116,13 @@ func (c *Client) Stream(ctx context.Context, prompt string) (<-chan StreamChunk,
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			body, _ := io.ReadAll(resp.Body)
-			ch <- StreamChunk{Err: fmt.Errorf("api error: %s - %s", resp.Status, string(body))}
+			body, err := io.ReadAll(resp.Body)
+			bodyStr := string(body)
+			if err != nil {
+				// If we can't read the error body, include the read error in the message
+				bodyStr = fmt.Sprintf("(failed to read error body: %v)", err)
+			}
+			ch <- StreamChunk{Err: fmt.Errorf("api error: %s - %s", resp.Status, bodyStr)}
 			return
 		}
 
@@ -133,10 +138,12 @@ func (c *Client) Stream(ctx context.Context, prompt string) (<-chan StreamChunk,
 				// Parse SSE format: check for "data: " prefix
 				if text, found := strings.CutPrefix(line, "data: "); found {
 					var streamResp StreamResponse
-					if err := sonic.Unmarshal([]byte(text), &streamResp); err == nil {
-						if len(streamResp.Candidates) > 0 && len(streamResp.Candidates[0].Content.Parts) > 0 {
-							ch <- StreamChunk{Text: streamResp.Candidates[0].Content.Parts[0].Text}
-						}
+					if err := sonic.Unmarshal([]byte(text), &streamResp); err != nil {
+						ch <- StreamChunk{Err: fmt.Errorf("unmarshal stream chunk: %w", err)}
+						continue
+					}
+					if len(streamResp.Candidates) > 0 && len(streamResp.Candidates[0].Content.Parts) > 0 {
+						ch <- StreamChunk{Text: streamResp.Candidates[0].Content.Parts[0].Text}
 					}
 				}
 			}

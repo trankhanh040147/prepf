@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/bytedance/sonic"
 	tea "github.com/charmbracelet/bubbletea"
@@ -48,6 +49,11 @@ func (s *Store) Save(profile *Profile) error {
 	data, err := sonic.Marshal(profile)
 	if err != nil {
 		return fmt.Errorf("marshal profile: %w", err)
+	}
+
+	// Ensure directory exists before writing
+	if err := os.MkdirAll(filepath.Dir(s.path), 0755); err != nil {
+		return fmt.Errorf("create profile directory: %w", err)
 	}
 
 	if err := os.WriteFile(s.path, data, 0644); err != nil {
@@ -96,6 +102,9 @@ type ProfileSaveError struct {
 	Err error
 }
 
+// SafeUpdateCmd applies updates to a profile and saves it
+// Note: If deletion logic is added later, cache the original ID before calling updates()
+// to ensure deletions work against the cached value, not the modified profile
 func (s *Store) SafeUpdateCmd(profile *Profile, updates func(*Profile)) tea.Cmd {
 	return func() tea.Msg {
 		// Apply updates (may modify ID)

@@ -69,7 +69,7 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 - [ ] **TTY Detection:** `isatty(stdout)` check, `NO_COLOR` support, graceful degradation for piped output
 
 ### AI Client (Gemini)
-- [ ] **Streaming:** Non-blocking updates via `tea.Cmd`, real-time TUI updates, chunk handling with error boundaries
+- [x] **Streaming:** Non-blocking updates via `tea.Cmd`, real-time TUI updates, chunk handling with error boundaries
 - [ ] **Context:** Token limit handling, usage display, history management
 - [ ] **Network:** Configurable timeouts, error wrapping, context cancellation
 

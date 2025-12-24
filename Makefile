@@ -63,6 +63,11 @@ lint:
 	@which golangci-lint > /dev/null || echo "golangci-lint not installed"
 	@which golangci-lint > /dev/null && golangci-lint run ./...
 
+## vulncheck: Check for known vulnerabilities in dependencies
+vulncheck:
+	@which govulncheck > /dev/null || (echo "govulncheck not installed. Install with: go install golang.org/x/vuln/cmd/govulncheck@latest" && exit 1)
+	govulncheck ./...
+
 ## fmt: Format code
 fmt:
 	$(GO) fmt ./...

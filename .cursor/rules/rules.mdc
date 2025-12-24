@@ -54,7 +54,7 @@ alwaysApply: true
 - **Flow:** Use `Cobra.RunE`. Return errors to `main`. **No** `os.Exit` in library code. Listen for `os.Interrupt`.
 - **Constructors:** Return pointers (`func NewType(...) *Type`) for stateful types.
 - **Memory Safety:** **Never** address map index directly. Pre-allocate slices.
-- **TUI I/O:** Wrap file I/O in `tea.Cmd` to prevent blocking the UI.
+- **TUI I/O:** Wrap file I/O in `tea.Cmd` to prevent blocking the UI. Channel receives (`<-ch`) and blocking loops inside `tea.Cmd` freeze the UI. Use message-based patterns: initiate async operations, return immediately, process results via messages. For streaming, separate stream initiation (`StreamStartCmd`) from chunk consumption (`WaitForStreamChunkCmd`).
 - **Dependency Injection:** Inject dependencies (API keys, config) as parameters. Store in model struct.
 
 ### 4. System & Configuration

@@ -84,6 +84,9 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 ### Testing
 - [ ] Interactive, Piped (`|`), Redirected (`<`), Non-interactive modes
 
+### CI/CD 
+// TODO: integrate useful flow for a CLI tool (OpenSSF, GoReleaser,...), greate for GitHub badges
+
 # v0.1.1 - Mock Module (The Gauntlet)
 
 **Status:** Planned

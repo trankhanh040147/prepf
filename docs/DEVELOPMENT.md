@@ -106,7 +106,8 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 
 # v0.1.1 - Mock Module (The Gauntlet)
 
-**Status:** Planned
+**Status:** Ideas, not planned yet.
+// TODO: Help me plan details for this phase
 
 **Goal:** MVP of "The Gauntlet" - focus on the _Roast_.
 - [ ] **Context Loader:** CV/Resume reader (Markdown/PDF-text), tech stack selector (Bubbletea list)

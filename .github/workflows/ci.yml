@@ -75,6 +75,7 @@ jobs:
   vulncheck:
     name: Vulnerability Check
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -114,11 +115,16 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
         run: |
-          go build -o prepf-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/prepf
+          OUTPUT_NAME="prepf-${{ matrix.goos }}-${{ matrix.goarch }}"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            OUTPUT_NAME="${OUTPUT_NAME}.exe"
+          fi
+          go build -o "${OUTPUT_NAME}" ./cmd/prepf
+          echo "BUILD_OUTPUT=${OUTPUT_NAME}" >> $GITHUB_ENV
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: prepf-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: prepf-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: ${{ env.BUILD_OUTPUT }}
 

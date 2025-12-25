@@ -59,14 +59,15 @@ alwaysApply: true
 
 ### 4. System & Configuration
 - **Config:** YAML in `~/.config/prepf/config.yaml`. Use `os.MkdirAll`. Set defaults.
-- **Viper:** Initialize once in `Load()`. `Save()` must not call `setupViper()` or `ReadInConfig()`. Use `viper.ConfigFileUsed()` for path, fallback to `Config.ConfigDir`.
+- **Config Loading:** Must happen in `rootCmd.PersistentPreRunE`. Inject via context, never use global flag getters. Subcommands read config from context via `GetConfig(cmd)`.
+- **Viper:** Initialize once in `Load()`. `Save()` must not call `setupViper()` or `ReadInConfig()`. Use `viper.ConfigFileUsed()` for path, fallback to `Config.ConfigDir`. Document single-initialization requirement.
 - **Config Keys:** Use constants from `config` package (`KeyAPIKey`, `KeyTimeout`, etc.). **Ban** hardcoded strings like `"api_key"` in Viper calls, map keys, or templates.
 - **Config Display:** Display logic must use `cfg.*` struct values (single source of truth). **Ban** re-checking `os.Getenv()` in display functions; Viper already resolved precedence (file > env > default).
 - **YAML Errors:** Warn on `stderr` for malformed config files. Distinguish file-not-found (silent) from parse errors (warn).
 - **Platform:** Use `runtime.GOOS` for generic commands (open/explorer) and `$EDITOR`.
 - **Streams:** Output → `os.Stdout`. Logs/Errors → `os.Stderr`.
 - **TTY:** Check `isatty(stdout)`. Disable colors if `NO_COLOR` or piping.
-- **Flags:** Unique short aliases. Do not redefine in `init()`.
+- **Flags:** Unique short aliases. Do not redefine in `init()`. Parse in root `PersistentPreRunE`, inject via context.
 - **Multi-item Processing:** Reload shared state (e.g., library) at start of each iteration to ensure fresh state for each item.
 - **Width Safety:** Guard `strings.Repeat` with `max(0, count)`. Guard width calculations to prevent negative values. Default to minimum width (80) if `Width() == 0` before first `WindowSizeMsg`.
 
@@ -75,6 +76,9 @@ alwaysApply: true
 - **State Transitions:** Extract repeated state transition logic (e.g., `m.state = m.previousState; m.viewport.Height = ...`) into helper methods like `returnToPreviousState()`.
 - **Error Handling:** Wrap errors: `fmt.Errorf("ctx: %w", err)`. Log before fallback.
 - **Method Receivers:** Mutating methods MUST use pointer receivers `(m *Type)`.
+- **Validation:** Avoid I/O in validation methods. Defer file existence checks to actual usage. Validate format/structure only.
+- **Constants:** Extract hardcoded lists/values to package-level constants (e.g., `ValidExperienceLevels`). Export if needed for tests.
+- **String Formatting:** Prefer raw string literals over `fmt.Sprintf` for static multi-line strings.
 - **Standards:** Complexity ≤15. Run `gofmt -s`, `staticcheck`.
 
 ## Bug Fix Protocol

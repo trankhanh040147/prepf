@@ -16,23 +16,46 @@ import (
 
 // Client handles Gemini API interactions
 type Client struct {
-	apiKey       string
-	baseURL      string
-	timeout      time.Duration
-	httpClient   *http.Client
-	inputTokens  int
-	outputTokens int
+	apiKey           string
+	baseURL          string
+	timeout          time.Duration
+	httpClient       *http.Client
+	inputTokens      int
+	outputTokens     int
+	tokenLimit       int
+	cumulativeInput  int
+	cumulativeOutput int
+	history          *History
 }
 
 // NewClient creates a new Gemini client
-func NewClient(apiKey string, timeout int) *Client {
+func NewClient(apiKey string, timeout int, tokenLimit int) *Client {
 	return &Client{
-		apiKey:  apiKey,
-		baseURL: "https://generativelanguage.googleapis.com/v1beta",
-		timeout: time.Duration(timeout) * time.Second,
+		apiKey:     apiKey,
+		baseURL:    "https://generativelanguage.googleapis.com/v1beta",
+		timeout:    time.Duration(timeout) * time.Second,
+		tokenLimit: tokenLimit,
+		history:    NewHistory(),
 		httpClient: &http.Client{
 			Timeout: time.Duration(timeout) * time.Second,
 		},
+	}
+}
+
+// SetTokenLimit sets the token limit for the client
+func (c *Client) SetTokenLimit(limit int) {
+	c.tokenLimit = limit
+}
+
+// GetHistory returns the conversation history
+func (c *Client) GetHistory() *History {
+	return c.history
+}
+
+// ClearHistory clears the conversation history
+func (c *Client) ClearHistory() {
+	if c.history != nil {
+		c.history.Clear()
 	}
 }
 
@@ -83,20 +106,40 @@ func (c *Client) Stream(ctx context.Context, prompt string) (<-chan StreamChunk,
 		return nil, fmt.Errorf("api key not configured")
 	}
 
+	// Check token limit before making request
+	if c.tokenLimit > 0 {
+		totalUsed := c.cumulativeInput + c.cumulativeOutput
+		// Estimate prompt tokens (rough heuristic: 1 token ≈ 4 chars)
+		// NOTE: This is an approximation. Actual tokenization may vary.
+		// A safety margin is applied to account for estimation inaccuracies.
+		estimatedPromptTokens := len(prompt) / 4
+		// Apply safety margin (20% buffer by default)
+		estimatedWithMargin := estimatedPromptTokens + (estimatedPromptTokens * 20 / 100)
+		if totalUsed+estimatedWithMargin > c.tokenLimit {
+			return nil, fmt.Errorf("token limit exceeded: %d/%d tokens used, estimated request (with margin) would exceed limit", totalUsed, c.tokenLimit)
+		}
+	}
+
 	ch := make(chan StreamChunk, 10)
 
 	go func() {
 		defer close(ch)
 
-		req := StreamRequest{
-			Contents: []Content{
-				{
-					Role: "user",
-					Parts: []Part{
-						{Text: prompt},
-					},
-				},
+		// Build contents from history + current prompt
+		contents := make([]Content, 0)
+		if c.history != nil {
+			contents = append(contents, c.history.ToContents()...)
+		}
+		// Add current user prompt
+		contents = append(contents, Content{
+			Role: "user",
+			Parts: []Part{
+				{Text: prompt},
 			},
+		})
+
+		req := StreamRequest{
+			Contents: contents,
 		}
 
 		reqBody, err := sonic.Marshal(req)
@@ -133,7 +176,8 @@ func (c *Client) Stream(ctx context.Context, prompt string) (<-chan StreamChunk,
 			return
 		}
 
-		// Stream response with a scanner
+		// Stream response with a scanner and collect for history
+		var fullResponse strings.Builder
 		scanner := bufio.NewScanner(resp.Body)
 		for scanner.Scan() {
 			select {
@@ -154,10 +198,24 @@ func (c *Client) Stream(ctx context.Context, prompt string) (<-chan StreamChunk,
 					if streamResp.UsageMetadata != nil {
 						c.inputTokens = streamResp.UsageMetadata.PromptTokenCount
 						c.outputTokens = streamResp.UsageMetadata.CandidatesTokenCount
+						// Update cumulative usage
+						c.cumulativeInput += c.inputTokens
+						c.cumulativeOutput += c.outputTokens
+
+						// Check if limit exceeded after this request
+						if c.tokenLimit > 0 {
+							totalUsed := c.cumulativeInput + c.cumulativeOutput
+							if totalUsed > c.tokenLimit {
+								ch <- StreamChunk{Err: fmt.Errorf("token limit exceeded: %d/%d tokens used", totalUsed, c.tokenLimit)}
+								return
+							}
+						}
 					}
 
 					if len(streamResp.Candidates) > 0 && len(streamResp.Candidates[0].Content.Parts) > 0 {
-						ch <- StreamChunk{Text: streamResp.Candidates[0].Content.Parts[0].Text}
+						chunkText := streamResp.Candidates[0].Content.Parts[0].Text
+						fullResponse.WriteString(chunkText)
+						ch <- StreamChunk{Text: chunkText}
 					}
 				}
 			}
@@ -169,6 +227,11 @@ func (c *Client) Stream(ctx context.Context, prompt string) (<-chan StreamChunk,
 		}
 
 		ch <- StreamChunk{Done: true}
+
+		// Add to history after stream completes
+		if c.history != nil && fullResponse.Len() > 0 {
+			c.history.AddToHistory(prompt, fullResponse.String())
+		}
 	}()
 
 	return ch, nil
@@ -208,13 +271,86 @@ func WaitForStreamChunkCmd(ch <-chan StreamChunk) tea.Cmd {
 	}
 }
 
-// GetTokenUsage returns token usage information (input tokens, output tokens)
+// GetTokenUsage returns token usage information (input tokens, output tokens) for current request
 func (c *Client) GetTokenUsage() (int, int) {
 	return c.inputTokens, c.outputTokens
 }
 
-// ResetTokenUsage resets token usage counters
+// GetCumulativeTokenUsage returns cumulative token usage across all requests
+func (c *Client) GetCumulativeTokenUsage() (int, int) {
+	return c.cumulativeInput, c.cumulativeOutput
+}
+
+// GetTotalTokenUsage returns total tokens used (input + output) for current request
+func (c *Client) GetTotalTokenUsage() int {
+	return c.inputTokens + c.outputTokens
+}
+
+// GetTotalCumulativeTokenUsage returns total cumulative tokens used
+func (c *Client) GetTotalCumulativeTokenUsage() int {
+	return c.cumulativeInput + c.cumulativeOutput
+}
+
+// ResetTokenUsage resets token usage counters for current request
 func (c *Client) ResetTokenUsage() {
 	c.inputTokens = 0
 	c.outputTokens = 0
+}
+
+// ResetCumulativeTokenUsage resets cumulative token usage counters
+func (c *Client) ResetCumulativeTokenUsage() {
+	c.cumulativeInput = 0
+	c.cumulativeOutput = 0
+	c.inputTokens = 0
+	c.outputTokens = 0
+}
+
+// UsageStats represents token usage statistics
+type UsageStats struct {
+	InputTokens      int
+	OutputTokens     int
+	CumulativeInput  int
+	CumulativeOutput int
+	TokenLimit       int
+}
+
+// String returns a formatted string showing token usage
+func (u UsageStats) String() string {
+	var parts []string
+
+	// Current request usage
+	if u.InputTokens > 0 || u.OutputTokens > 0 {
+		parts = append(parts, fmt.Sprintf("Request: %d in, %d out", u.InputTokens, u.OutputTokens))
+	}
+
+	// Cumulative usage
+	if u.CumulativeInput > 0 || u.CumulativeOutput > 0 {
+		totalCumulative := u.CumulativeInput + u.CumulativeOutput
+		parts = append(parts, fmt.Sprintf("Total: %d in, %d out (%d)", u.CumulativeInput, u.CumulativeOutput, totalCumulative))
+	}
+
+	// Token limit if set
+	if u.TokenLimit > 0 {
+		totalUsed := u.CumulativeInput + u.CumulativeOutput
+		percentage := float64(totalUsed) / float64(u.TokenLimit) * 100
+		parts = append(parts, fmt.Sprintf("Limit: %d/%d (%.1f%%)", totalUsed, u.TokenLimit, percentage))
+	}
+
+	if len(parts) == 0 {
+		return "Tokens: 0"
+	}
+
+	return "Tokens: " + strings.Join(parts, " | ")
+}
+
+// UsageDisplay returns a formatted string showing token usage
+func (c *Client) UsageDisplay() string {
+	stats := UsageStats{
+		InputTokens:      c.inputTokens,
+		OutputTokens:     c.outputTokens,
+		CumulativeInput:  c.cumulativeInput,
+		CumulativeOutput: c.cumulativeOutput,
+		TokenLimit:       c.tokenLimit,
+	}
+	return stats.String()
 }

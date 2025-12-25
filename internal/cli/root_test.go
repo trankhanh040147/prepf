@@ -20,3 +20,37 @@ func TestRootCommand(t *testing.T) {
 	}
 }
 
+func TestRootCommand_Flags(t *testing.T) {
+	// Test that flags are defined
+	configFlag := rootCmd.PersistentFlags().Lookup(FlagConfig)
+	if configFlag == nil {
+		t.Error("--config flag should be defined")
+	}
+
+	profileFlag := rootCmd.PersistentFlags().Lookup(FlagProfile)
+	if profileFlag == nil {
+		t.Error("--profile flag should be defined")
+	}
+
+	verboseFlag := rootCmd.PersistentFlags().Lookup(FlagVerbose)
+	if verboseFlag == nil {
+		t.Error("--verbose flag should be defined")
+	}
+
+	quietFlag := rootCmd.PersistentFlags().Lookup(FlagQuiet)
+	if quietFlag == nil {
+		t.Error("--quiet flag should be defined")
+	}
+}
+
+func TestRootCommand_ContextInjection(t *testing.T) {
+	// Test that PersistentPreRunE is set
+	if rootCmd.PersistentPreRunE == nil {
+		t.Fatal("root command PersistentPreRunE is nil")
+	}
+
+	// Context helpers (GetConfig, GetFlags) are tested via integration tests
+	// with actual command execution
+}
+
+

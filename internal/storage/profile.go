@@ -4,16 +4,48 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bytedance/sonic"
 	tea "github.com/charmbracelet/bubbletea"
 )
+
+// ValidExperienceLevels contains the list of valid experience levels
+var ValidExperienceLevels = []string{"junior", "mid", "senior", "principal", "architect"}
 
 // Profile represents user profile data
 type Profile struct {
 	ID              string `json:"id,omitempty"`
 	CVPath          string `json:"cv_path"`
 	ExperienceLevel string `json:"experience_level"`
+}
+
+// Validate validates profile fields
+// NOTE: File existence checks (e.g., CVPath) are deferred to actual usage to avoid I/O in validation.
+func (p *Profile) Validate() error {
+	if p.ExperienceLevel != "" {
+		found := false
+		for _, level := range ValidExperienceLevels {
+			if strings.EqualFold(p.ExperienceLevel, level) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("invalid experience level '%s', must be one of: %v", p.ExperienceLevel, ValidExperienceLevels)
+		}
+	}
+
+	// CVPath validation: only check format, not file existence
+	// File existence should be checked when the file is actually read
+	if p.CVPath != "" {
+		// Basic path validation (non-empty, no other checks to avoid I/O)
+		if strings.TrimSpace(p.CVPath) == "" {
+			return fmt.Errorf("CV path cannot be empty or whitespace")
+		}
+	}
+
+	return nil
 }
 
 // Store handles profile persistence
@@ -44,8 +76,13 @@ func (s *Store) Load() (*Profile, error) {
 	return &profile, nil
 }
 
-// Save saves profile to disk
+// Save saves profile to disk atomically
 func (s *Store) Save(profile *Profile) error {
+	// Validate before saving
+	if err := profile.Validate(); err != nil {
+		return fmt.Errorf("validate profile: %w", err)
+	}
+
 	data, err := sonic.Marshal(profile)
 	if err != nil {
 		return fmt.Errorf("marshal profile: %w", err)
@@ -56,8 +93,17 @@ func (s *Store) Save(profile *Profile) error {
 		return fmt.Errorf("create profile directory: %w", err)
 	}
 
-	if err := os.WriteFile(s.path, data, 0644); err != nil {
-		return fmt.Errorf("write profile: %w", err)
+	// Atomic write: write to temp file then rename
+	tmpPath := s.path + ".tmp"
+	if err := os.WriteFile(tmpPath, data, 0644); err != nil {
+		return fmt.Errorf("write temp profile: %w", err)
+	}
+
+	// Rename is atomic on most filesystems
+	if err := os.Rename(tmpPath, s.path); err != nil {
+		// Clean up temp file on error
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("rename profile: %w", err)
 	}
 
 	return nil
@@ -77,10 +123,11 @@ func (s *Store) LoadCmd() tea.Cmd {
 // SaveCmd returns a tea.Cmd for saving profile
 func (s *Store) SaveCmd(profile *Profile) tea.Cmd {
 	return func() tea.Msg {
+		originalID := profile.ID
 		if err := s.Save(profile); err != nil {
 			return ProfileSaveError{Err: err}
 		}
-		return ProfileSaved{}
+		return ProfileSaved{OriginalID: originalID, NewID: profile.ID}
 	}
 }
 
@@ -90,7 +137,10 @@ type ProfileLoaded struct {
 }
 
 // ProfileSaved is a message sent when profile is saved
-type ProfileSaved struct{}
+type ProfileSaved struct {
+	OriginalID string // ID before update (for tracking/deletion)
+	NewID      string // ID after update
+}
 
 // ProfileLoadError is a message sent when profile load fails
 type ProfileLoadError struct {
@@ -102,17 +152,50 @@ type ProfileSaveError struct {
 	Err error
 }
 
+// safeUpdateResult holds the result of a safe update operation
+type safeUpdateResult struct {
+	originalID string
+	newID      string
+	err        error
+}
+
+// safeUpdate applies updates to a profile and saves it
+// Returns the original ID, new ID, and any error
+func (s *Store) safeUpdate(profile *Profile, updates func(*Profile)) (string, string, error) {
+	// Cache original ID before any mutations
+	originalID := profile.ID
+
+	// Apply updates (may modify ID)
+	updates(profile)
+
+	// Validate after updates
+	if err := profile.Validate(); err != nil {
+		return originalID, profile.ID, fmt.Errorf("validation failed: %w", err)
+	}
+
+	if err := s.Save(profile); err != nil {
+		return originalID, profile.ID, err
+	}
+
+	return originalID, profile.ID, nil
+}
+
 // SafeUpdateCmd applies updates to a profile and saves it
-// Note: If deletion logic is added later, cache the original ID before calling updates()
-// to ensure deletions work against the cached value, not the modified profile
+// Caches the original ID before applying updates to ensure safe mutation
+// (important for future deletion operations that need the original ID)
 func (s *Store) SafeUpdateCmd(profile *Profile, updates func(*Profile)) tea.Cmd {
 	return func() tea.Msg {
-		// Apply updates (may modify ID)
-		updates(profile)
-
-		if err := s.Save(profile); err != nil {
+		originalID, newID, err := s.safeUpdate(profile, updates)
+		if err != nil {
 			return ProfileSaveError{Err: err}
 		}
-		return ProfileSaved{}
+		return ProfileSaved{OriginalID: originalID, NewID: newID}
 	}
+}
+
+// SafeUpdate applies updates to a profile and saves it (non-TUI version)
+// Caches the original ID before applying updates to ensure safe mutation
+func (s *Store) SafeUpdate(profile *Profile, updates func(*Profile)) error {
+	_, _, err := s.safeUpdate(profile, updates)
+	return err
 }

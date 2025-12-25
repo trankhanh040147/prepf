@@ -50,42 +50,59 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 
 # v0.1.0 - Foundation
 
-**Status:** In review
+**Status:** ✅ Complete
 
 **Goal:** Establish core infrastructure following project principles (UX First, Action > Theory).
 
+## What's New
+
+- **CLI Flags:** Added `--config/-c`, `--profile/-p`, `--verbose/-v`, `--quiet/-q` with path override support
+- **AI Client:** Token limit management (1M default), cumulative usage tracking, `UsageDisplay()` method, conversation history for multi-turn interactions
+- **Storage:** Profile validation (experience levels), safe mutation with ID caching, atomic saves
+- **TUI:** BaseModel helpers (`Viewport()`, `SetViewportContent()`), verified width safety and non-blocking patterns
+- **Testing:** Comprehensive coverage for interactive TUI, piped mode, non-interactive CLI, and AI client features
+- **CI/CD:** GitHub Actions workflow with testing, linting (`gofmt`, `go vet`, `staticcheck`), vulnerability scanning (`govulncheck`), and multi-platform builds
+
+## Code Quality Fixes
+
+- **Config Loading:** Refactored to use context injection pattern. Config loaded in `rootCmd.PersistentPreRunE`, injected via context. Removed global flag getters.
+- **Viper State:** Documented single-initialization requirement for Viper global state.
+- **Validation:** Removed I/O (`os.Stat`) from `Profile.Validate()`, deferred to actual usage.
+- **Token Estimation:** Added 20% safety margin to token estimation heuristic, documented limitation.
+- **Code Refactoring:** Extracted `UsageStats` struct, refactored `SafeUpdate` duplication, extracted `ValidExperienceLevels` constant, simplified `InitialConfigContent` to use raw string literal.
+
 ### Core CLI
-- [ ] **Cobra Setup:** Root command with `RunE` pattern, unique flag aliases, error propagation to `main`
+- [x] **Cobra Setup:** Root command with `RunE` pattern, unique flag aliases, error propagation to `main`
 
 ### Config Engine
 - [x] **Viper Integration:** Config path `~/.config/prepf/config.yaml`, defaults, platform detection, env var overrides
 - [x] **Config Command:** View all/specific keys, set values (`prepf config <key> <value>`), edit file (`prepf config edit`)
 - [x] **UX:** Fuzzy matching for typos, helpful error messages, config save with validation, initial template
-- [x] **Keys:** Writable (api_key, timeout, editor), read-only (no_color, is_tty, config_dir, profile_path)
+- [x] **Keys:** Writable (api_key, timeout, editor, token_limit), read-only (no_color, is_tty, config_dir, profile_path)
 
 ### TUI Shell (Bubbletea)
-- [ ] **Base Model:** Vim keymap (`j/k`, `g/G`, `/`), help overlay (`?`), viewport management, width safety
-- [ ] **State Management:** Non-blocking spinner/loading (`tea.Cmd`), window resize, layout via style width
-- [ ] **TTY Detection:** `isatty(stdout)` check, `NO_COLOR` support, graceful degradation for piped output
+- [x] **Base Model:** Vim keymap (`j/k`, `g/G`, `/`), help overlay (`?`), viewport management, width safety
+- [x] **State Management:** Non-blocking spinner/loading (`tea.Cmd`), window resize, layout via style width
+- [x] **TTY Detection:** `isatty(stdout)` check, `NO_COLOR` support, graceful degradation for piped output
 
 ### AI Client (Gemini)
 - [x] **Streaming:** Non-blocking updates via `tea.Cmd`, real-time TUI updates, chunk handling with error boundaries
-- [ ] **Context:** Token limit handling, usage display, history management
-- [ ] **Network:** Configurable timeouts, error wrapping, context cancellation
+- [x] **Context:** Token limit handling, usage display, history management
+- [x] **Network:** Configurable timeouts, error wrapping, context cancellation
 
 ### Storage Layer
-- [ ] **User Profile (JSON):** CV path, Experience Level, file-based persistence, safe mutation, index safety
+- [x] **User Profile (JSON):** CV path, Experience Level, file-based persistence, safe mutation, index safety
 
 ### Code Quality
 - [x] **Structure:** Small modular files, constants in `[...constants.go]`, isolated packages (AI client, stringutil)
 - [x] **Standards:** `gofmt -s`, `go vet`, `staticcheck`, complexity ≤15, memory safety, `samber/lo` for functional ops
-- [ ] **Dependencies:** Pin versions in `go.mod` ✓, `govulncheck` before commit
+- [x] **Dependencies:** Pin versions in `go.mod` ✓, `govulncheck` before commit
 
 ### Testing
-- [ ] Interactive, Piped (`|`), Redirected (`<`), Non-interactive modes
+- [x] Interactive, Piped (`|`), Redirected (`<`), Non-interactive modes
 
 ### CI/CD 
-// TODO: integrate useful flow for a CLI tool (OpenSSF, GoReleaser,...), greate for GitHub badges
+- [x] GitHub Actions workflow with testing, linting, vulnerability scanning, and multi-platform builds
 
 # v0.1.1 - Mock Module (The Gauntlet)
 

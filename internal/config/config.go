@@ -16,6 +16,7 @@ type Config struct {
 	APIKey      string
 	Timeout     int
 	Editor      string
+	TokenLimit  int
 	NoColor     bool
 	IsTTY       bool
 	ConfigDir   string
@@ -42,6 +43,7 @@ func setupViper() (string, error) {
 	viper.SetDefault(KeyAPIKey, "")
 	viper.SetDefault(KeyTimeout, DefaultTimeout)
 	viper.SetDefault(KeyEditor, getDefaultEditor())
+	viper.SetDefault(KeyTokenLimit, DefaultTokenLimit)
 	// Environment variable overrides
 	viper.SetEnvPrefix(EnvPrefix)
 	envVarMap := map[string]string{
@@ -58,9 +60,27 @@ func setupViper() (string, error) {
 
 // Load initializes and loads configuration
 func Load() (*Config, error) {
-	configDir, err := setupViper()
-	if err != nil {
-		return nil, err
+	return LoadWithOverrides("", "")
+}
+
+// LoadWithOverrides initializes and loads configuration with optional path overrides
+// NOTE: Viper uses a global instance. This function modifies global Viper state via SetConfigFile.
+// It should be called once per process, typically in rootCmd.PersistentPreRunE.
+// Multiple calls may cause unexpected behavior, especially in tests.
+func LoadWithOverrides(configPathOverride, profilePathOverride string) (*Config, error) {
+	var configDir string
+	var err error
+
+	if configPathOverride != "" {
+		// Use provided config path
+		configDir = filepath.Dir(configPathOverride)
+		viper.SetConfigFile(configPathOverride)
+	} else {
+		// Use default config location
+		configDir, err = setupViper()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Read config file (ignore if not exists, warn if malformed)
@@ -80,14 +100,21 @@ func Load() (*Config, error) {
 	isTTY := isatty.IsTerminal(os.Stdout.Fd())
 	noColor := os.Getenv(EnvVarNoColor) != "" || !isTTY
 
+	// Determine profile path
+	profilePath := filepath.Join(configDir, ProfileFileName)
+	if profilePathOverride != "" {
+		profilePath = profilePathOverride
+	}
+
 	cfg := &Config{
 		APIKey:      viper.GetString(KeyAPIKey),
 		Timeout:     viper.GetInt(KeyTimeout),
 		Editor:      viper.GetString(KeyEditor),
+		TokenLimit:  viper.GetInt(KeyTokenLimit),
 		NoColor:     noColor,
 		IsTTY:       isTTY,
 		ConfigDir:   configDir,
-		ProfilePath: filepath.Join(configDir, ProfileFileName),
+		ProfilePath: profilePath,
 	}
 
 	return cfg, nil
@@ -130,8 +157,9 @@ func getDefaultEditor() string {
 
 // InitialConfigContent returns the initial YAML content for a new config file
 func InitialConfigContent() string {
-	return fmt.Sprintf(`%s%s: ""
-%s: %d
-%s: ""
-`, ConfigFileHeader, KeyAPIKey, KeyTimeout, DefaultTimeout, KeyEditor)
+	return ConfigFileHeader + `api_key: ""
+timeout: 30
+editor: ""
+token_limit: 1000000
+`
 }

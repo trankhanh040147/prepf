@@ -61,5 +61,90 @@ func TestBaseModel_WidthSafety(t *testing.T) {
 	if model.Width() != 120 {
 		t.Errorf("expected width 120, got %d", model.Width())
 	}
+
+	// Test zero width handling (should default to min width)
+	zeroWidthMsg := tea.WindowSizeMsg{Width: 0, Height: 20}
+	model.Update(zeroWidthMsg)
+	if model.Width() < config.DefaultMinWidth {
+		t.Errorf("expected width >= %d for zero width, got %d", config.DefaultMinWidth, model.Width())
+	}
+}
+
+func TestBaseModel_KeyBindings(t *testing.T) {
+	cfg := &config.Config{NoColor: false}
+	model := NewBaseModel(cfg)
+
+	// Test help key (?) triggers help state
+	helpKey := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("?")}
+	_, _ = model.Update(helpKey)
+	if model.State() != StateHelp {
+		t.Errorf("expected StateHelp after '?' key, got %d", model.State())
+	}
+
+	// Test quit key (q) returns quit command
+	// Reset to normal state first
+	model.SetState(StateNormal)
+	quitKey := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("q")}
+	_, cmd := model.Update(quitKey)
+	// Check if cmd is tea.Quit (it's a function that returns tea.Quit())
+	if cmd == nil {
+		t.Error("quit key should return tea.Quit command")
+	}
+}
+
+func TestBaseModel_ViewportIntegration(t *testing.T) {
+	cfg := &config.Config{NoColor: false}
+	model := NewBaseModel(cfg)
+
+	// Test viewport is initialized
+	if model.Viewport() == nil {
+		t.Fatal("viewport should be initialized")
+	}
+
+	// Test setting viewport content
+	content := "Test content"
+	model.SetViewportContent(content)
+	
+	// Viewport content is set (we can't easily verify without rendering, but structure is correct)
+	if model.Viewport() == nil {
+		t.Error("viewport should still exist after setting content")
+	}
+}
+
+func TestBaseModel_SearchIntegration(t *testing.T) {
+	cfg := &config.Config{NoColor: false}
+	model := NewBaseModel(cfg)
+
+	// Test search activation via key
+	searchKey := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("/")}
+	_, _ = model.Update(searchKey)
+	
+	if model.State() != StateSearch {
+		t.Errorf("expected StateSearch after '/' key, got %d", model.State())
+	}
+
+	// Test search query retrieval
+	query := model.SearchQuery()
+	if query != "" {
+		t.Errorf("expected empty query initially, got '%s'", query)
+	}
+}
+
+func TestBaseModel_NoColorMode(t *testing.T) {
+	cfg := &config.Config{NoColor: true}
+	model := NewBaseModel(cfg)
+
+	// Verify noColor is set
+	if !model.noColor {
+		t.Error("noColor should be true when config.NoColor is true")
+	}
+
+	// Set some content to viewport so View() returns something
+	model.SetViewportContent("Test content")
+	
+	// View should still render without errors
+	view := model.View()
+	// Viewport might be empty initially, but View() should not panic
+	_ = view // Just ensure it doesn't panic
 }
 

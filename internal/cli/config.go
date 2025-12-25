@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -16,22 +15,15 @@ import (
 	"github.com/trankhanh040147/prepf/internal/util/stringutil"
 )
 
-type configKey struct{}
-
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Manage configuration",
 	Long:  "View or edit configuration settings",
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		cfg, err := config.Load()
-		if err != nil {
-			return fmt.Errorf("load config: %w", err)
-		}
-		cmd.SetContext(context.WithValue(cmd.Context(), configKey{}, cfg))
-		return nil
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		cfg := cmd.Context().Value(configKey{}).(*config.Config)
+		cfg := GetConfig(cmd)
+		if cfg == nil {
+			return fmt.Errorf("config not loaded")
+		}
 
 		// If no args, show all config
 		if len(args) == 0 {

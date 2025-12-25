@@ -13,9 +13,10 @@ const (
 	EnvVarTimeout = "PREPF_TIMEOUT"
 
 	// Config key names (used in Viper and YAML)
-	KeyAPIKey = "api_key"
-	KeyTimeout = "timeout"
-	KeyEditor = "editor"
+	KeyAPIKey    = "api_key"
+	KeyTimeout   = "timeout"
+	KeyEditor    = "editor"
+	KeyTokenLimit = "token_limit"
 
 	// Read-only config keys (display-only, not settable)
 	KeyNoColor    = "no_color"
@@ -32,6 +33,11 @@ const (
 
 	// DefaultTimeout is the default network timeout in seconds
 	DefaultTimeout = 30
+	// DefaultTokenLimit is the default token limit for gemini-pro (1M tokens)
+	DefaultTokenLimit = 1_000_000
+	// TokenEstimationMargin is the safety margin (as percentage) for token estimation
+	// A 20% margin helps account for inaccuracies in the rough len(prompt)/4 heuristic
+	TokenEstimationMargin = 20
 	// DefaultEditorLinux is the default editor for Linux
 	DefaultEditorLinux = "vi"
 	// DefaultEditorDarwin is the default editor for macOS

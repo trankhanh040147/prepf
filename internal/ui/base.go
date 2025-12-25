@@ -202,3 +202,15 @@ func (m *BaseModel) Width() int {
 func (m *BaseModel) Height() int {
 	return m.height
 }
+
+// Viewport returns the viewport model for content rendering
+func (m *BaseModel) Viewport() *ViewportModel {
+	return m.viewport
+}
+
+// SetViewportContent sets the viewport content
+func (m *BaseModel) SetViewportContent(content string) {
+	if m.viewport != nil {
+		m.viewport.SetContent(content)
+	}
+}

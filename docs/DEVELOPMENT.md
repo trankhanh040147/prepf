@@ -104,20 +104,48 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 ### CI/CD 
 - [x] GitHub Actions workflow with testing, linting, vulnerability scanning, and multi-platform builds
 
-# v0.1.1 - Mock Module (The Gauntlet)
+# v0.1.1 - Mock Module (The Gauntlet MVP)
+**Status:** Planned (Sequential Q&A + Constructive Brutality)
 
-**Status:** Ideas, not planned yet.
-// TODO: Help me plan details for this phase
+**Goal:** High-friction, turn-based interview loop with visceral, actionable feedback.
 
-**Goal:** MVP of "The Gauntlet" - focus on the _Roast_.
-- [ ] **Context Loader:** CV/Resume reader (Markdown/PDF-text), tech stack selector (Bubbletea list)
-- [ ] **Interview Loop (TUI):** Split view (AI Question top, User Input bottom), "I don't know" shortcut (Tab)
-- [ ] **Roast Renderer:** Markdown renderer (Glamour) for harsh feedback, save transcript
-- [ ] **System Prompt v1:** "Senior Architect" persona that penalizes fluff
+### 1. Sequential Interview Engine
+- [ ] **Turn-Based Flow:** Strictly one question at a time. User input is locked while AI "speaks."
+- [ ] **AI Orchestration:** AI decides when to follow up on an answer or pivot to a new topic via hidden `<NEXT>` signals.
+- [ ] **Context Loader (v0):** Support for `.txt` and `.md` resume ingestion via `os.ReadFile`.
+- [ ] **Protocol Engine:** `regexp` parser to intercept hidden `<NEXT>` and `<ROAST>` signals.
+
+### 2. The "Roast" Mechanics
+- [ ] **The "Surrender" Mechanic:** `Tab` key injects a Shadow Prompt: *"User surrenders. Give a snappy 1-2 sentence correction and move on."*
+- [ ] **Inline Micro-Roast UI:** Mid-interview failures/surrenders styled in **Bold Red** via `lipgloss` for immediate feedback.
+- [ ] **The Verdict:** 
+    - **Visual Grade:** High-contrast `lipgloss` box displaying **Letter Grade (A-F)**.
+    - **Persona Labels:** Descriptive status (e.g., `[A] - ARCHITECT MATERIAL`, `[F] - TERMINATED`).
+- [ ] **The Roast:** 3-point remediation plan rendered as **Interactive Buttons** (Placeholders for Gym Mode).
+
+### 3. Session Governance
+- [ ] **Safety Valve:** Hard limit (10 questions/15 mins).
+- [ ] **Graceful Exit:** Status bar triggers an **Inverted Pulsing [FINAL QUESTION] Alert** (`tea.Tick`); system forces `<ROAST>` after the current turn.
+- [ ] **Metadata Tracking:** Silently track "Surrender" count for future grading logic.
+
+# v0.1.2 - The Scalable Standard
+**Status:** In planning (Structured Logic & Persistence)
+
+- [ ] **Function Calling:** Migrate to Gemini Tool Use for state transitions (`pivot_topic`, `finalize_roast`).
+- [ ] **PDF Support:** Native resume parsing via `ledongthuc/pdf`.
+- [ ] **Persistence:** Save transcripts to `~/.local/share/prepf/history/` as JSON.
+- [ ] **Gym Integration:** Activate "Remediation Buttons" to launch targeted sessions in **The Gym**.
 
 ---
 
-# v0.1.2 - Gym Mode
+## Future Considerations (v0.2.0+)
+- **Hybrid Grading:** Implement "Grade Ceilings" based on the number of `Tab` surrenders.
+- **Dynamic Pressure:** TUI border colors shift (Green → Red) based on "Roast" severity.
+- **Knowledge Graph:** Real-time side-panel visualization of technical "Weak Spots."
+
+---
+
+# v0.2 - Gym Mode
 
 **Status:** In planning
 

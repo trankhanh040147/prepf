@@ -59,6 +59,8 @@ func NewStore(path string) *Store {
 }
 
 // Load loads profile from disk
+// If the file is JSON, it unmarshals as Profile struct.
+// If the file is markdown/txt (resume content), it returns a Profile with CVPath set to the file path.
 func (s *Store) Load() (*Profile, error) {
 	data, err := os.ReadFile(s.path)
 	if err != nil {
@@ -68,9 +70,24 @@ func (s *Store) Load() (*Profile, error) {
 		return nil, fmt.Errorf("read profile: %w", err)
 	}
 
+	// Check if file is empty or whitespace-only
+	trimmed := strings.TrimSpace(string(data))
+	if trimmed == "" {
+		return &Profile{}, nil
+	}
+
+	// Try to unmarshal as JSON first
 	var profile Profile
 	if err := sonic.Unmarshal(data, &profile); err != nil {
-		return nil, fmt.Errorf("unmarshal profile: %w", err)
+		// If it's not JSON (doesn't start with { or [), treat it as markdown/txt resume content
+		if !strings.HasPrefix(trimmed, "{") && !strings.HasPrefix(trimmed, "[") {
+			// Profile file contains resume content, so CVPath is the file itself
+			return &Profile{
+				CVPath: s.path,
+			}, nil
+		}
+		// Invalid JSON format
+		return nil, fmt.Errorf("profile file is not valid JSON: %w", err)
 	}
 
 	return &profile, nil

@@ -105,7 +105,7 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 - [x] GitHub Actions workflow with testing, linting, vulnerability scanning, and multi-platform builds
 
 # v0.1.1 - Mock Module (The Gauntlet MVP)
-**Status:** Planned (Sequential Q&A + Constructive Brutality)
+**Status:** Implemented, In review
 
 **Goal:** High-friction, turn-based interview loop with visceral, actionable feedback.
 

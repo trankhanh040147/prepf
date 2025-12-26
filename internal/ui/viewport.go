@@ -41,6 +41,11 @@ func (v *ViewportModel) SetContent(content string) {
 	v.viewport.SetContent(content)
 }
 
+// GotoBottom scrolls the viewport to the bottom
+func (v *ViewportModel) GotoBottom() {
+	v.viewport.GotoBottom()
+}
+
 // SetSize sets viewport size with safety checks
 func (v *ViewportModel) SetSize(width, height int) {
 	w, h := sanitizeDimensions(width, height)

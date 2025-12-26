@@ -3,12 +3,13 @@ package storage
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
 func TestStore_Load(t *testing.T) {
 	tmpDir := t.TempDir()
-	path := filepath.Join(tmpDir, "profile.json")
+	path := filepath.Join(tmpDir, "profile.md")
 	store := NewStore(path)
 
 	// Test loading non-existent profile (should return empty profile)
@@ -28,7 +29,7 @@ func TestStore_Load(t *testing.T) {
 
 func TestStore_Save(t *testing.T) {
 	tmpDir := t.TempDir()
-	path := filepath.Join(tmpDir, "profile.json")
+	path := filepath.Join(tmpDir, "profile.md")
 	store := NewStore(path)
 
 	profile := &Profile{
@@ -69,7 +70,7 @@ func TestStore_Save(t *testing.T) {
 func TestStore_SaveCreatesDirectory(t *testing.T) {
 	tmpDir := t.TempDir()
 	// Create a nested path that doesn't exist
-	path := filepath.Join(tmpDir, "nested", "dir", "profile.json")
+	path := filepath.Join(tmpDir, "nested", "dir", "profile.md")
 	store := NewStore(path)
 
 	profile := &Profile{
@@ -93,3 +94,73 @@ func TestStore_SaveCreatesDirectory(t *testing.T) {
 	}
 }
 
+func TestStore_Load_EmptyFile(t *testing.T) {
+	tmpDir := t.TempDir()
+	path := filepath.Join(tmpDir, "profile.md")
+	store := NewStore(path)
+
+	// Create empty file
+	if err := os.WriteFile(path, []byte(""), 0644); err != nil {
+		t.Fatalf("failed to create empty file: %v", err)
+	}
+
+	profile, err := store.Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if profile == nil {
+		t.Fatal("Load() returned nil profile")
+	}
+
+	if profile.ID != "" {
+		t.Errorf("expected empty ID for empty file, got '%s'", profile.ID)
+	}
+}
+
+func TestStore_Load_InvalidJSON(t *testing.T) {
+	tmpDir := t.TempDir()
+	path := filepath.Join(tmpDir, "profile.md")
+	store := NewStore(path)
+
+	// Create file with invalid JSON
+	invalidJSON := `{"cv_path": "test", invalid}`
+	if err := os.WriteFile(path, []byte(invalidJSON), 0644); err != nil {
+		t.Fatalf("failed to create invalid JSON file: %v", err)
+	}
+
+	_, err := store.Load()
+	if err == nil {
+		t.Fatal("Load() should return error for invalid JSON")
+	}
+
+	if !strings.Contains(err.Error(), "not valid JSON") {
+		t.Errorf("expected error message about invalid JSON, got: %v", err)
+	}
+}
+
+func TestStore_Load_PlainText(t *testing.T) {
+	tmpDir := t.TempDir()
+	path := filepath.Join(tmpDir, "profile.md")
+	store := NewStore(path)
+
+	// Create file with plain text (resume content)
+	plainText := "Danh Son Ha\nPhone: (+84) 357 607"
+	if err := os.WriteFile(path, []byte(plainText), 0644); err != nil {
+		t.Fatalf("failed to create plain text file: %v", err)
+	}
+
+	profile, err := store.Load()
+	if err != nil {
+		t.Fatalf("Load() should not return error for plain text (markdown/txt): %v", err)
+	}
+
+	if profile == nil {
+		t.Fatal("Load() returned nil profile")
+	}
+
+	// Profile file contains resume content, so CVPath should be set to the file path
+	if profile.CVPath != path {
+		t.Errorf("expected CVPath to be '%s', got '%s'", path, profile.CVPath)
+	}
+}

@@ -148,7 +148,7 @@ func (c *Client) Stream(ctx context.Context, prompt string) (<-chan StreamChunk,
 			return
 		}
 
-		url := fmt.Sprintf("%s/models/gemini-pro:streamGenerateContent?key=%s", c.baseURL, c.apiKey)
+		url := fmt.Sprintf("%s/models/gemini-2.5-flash:streamGenerateContent?key=%s", c.baseURL, c.apiKey)
 
 		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(reqBody))
 		if err != nil {

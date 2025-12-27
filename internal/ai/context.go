@@ -44,20 +44,6 @@ func (h *History) Count() int {
 	return len(h.entries)
 }
 
-// ToContents converts history to Content slice for API requests
-func (h *History) ToContents() []Content {
-	contents := make([]Content, 0, len(h.entries))
-	for _, entry := range h.entries {
-		contents = append(contents, Content{
-			Role: entry.Role,
-			Parts: []Part{
-				{Text: entry.Content},
-			},
-		})
-	}
-	return contents
-}
-
 // AddToHistory adds a user message and assistant response to history
 func (h *History) AddToHistory(userMsg, assistantMsg string) {
 	h.Add("user", userMsg)
@@ -65,4 +51,3 @@ func (h *History) AddToHistory(userMsg, assistantMsg string) {
 		h.Add("assistant", assistantMsg)
 	}
 }
-

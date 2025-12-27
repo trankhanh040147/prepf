@@ -1,25 +1,25 @@
+// Package ai provides Gemini API client functionality using the official SDK.
+//
+// The client supports streaming responses, token usage tracking, and conversation history management.
 package ai
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"fmt"
-	"io"
-	"net/http"
 	"strings"
 	"time"
 
-	"github.com/bytedance/sonic"
 	tea "github.com/charmbracelet/bubbletea"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/genai"
 )
 
 // Client handles Gemini API interactions
 type Client struct {
 	apiKey           string
-	baseURL          string
 	timeout          time.Duration
-	httpClient       *http.Client
+	genaiClient      *genai.Client
+	modelID          string
 	inputTokens      int
 	outputTokens     int
 	tokenLimit       int
@@ -30,15 +30,26 @@ type Client struct {
 
 // NewClient creates a new Gemini client
 func NewClient(apiKey string, timeout int, tokenLimit int) *Client {
+	ctx := context.Background()
+	cfg := &genai.ClientConfig{
+		APIKey:  apiKey,
+		Backend: genai.BackendGeminiAPI,
+	}
+
+	genaiClient, err := genai.NewClient(ctx, cfg)
+	if err != nil {
+		// If client creation fails, we'll return a client with nil genaiClient
+		// and handle the error when Stream is called
+		genaiClient = nil
+	}
+
 	return &Client{
-		apiKey:     apiKey,
-		baseURL:    "https://generativelanguage.googleapis.com/v1beta",
-		timeout:    time.Duration(timeout) * time.Second,
-		tokenLimit: tokenLimit,
-		history:    NewHistory(),
-		httpClient: &http.Client{
-			Timeout: time.Duration(timeout) * time.Second,
-		},
+		apiKey:      apiKey,
+		timeout:     time.Duration(timeout) * time.Second,
+		tokenLimit:  tokenLimit,
+		genaiClient: genaiClient,
+		modelID:     "gemini-2.5-flash",
+		history:     NewHistory(),
 	}
 }
 
@@ -59,40 +70,6 @@ func (c *Client) ClearHistory() {
 	}
 }
 
-// StreamRequest represents a streaming request
-type StreamRequest struct {
-	Contents []Content `json:"contents"`
-}
-
-// Content represents a message content
-type Content struct {
-	Role  string `json:"role"`
-	Parts []Part `json:"parts"`
-}
-
-// Part represents a content part
-type Part struct {
-	Text string `json:"text"`
-}
-
-// StreamResponse represents a streaming response
-type StreamResponse struct {
-	Candidates    []Candidate    `json:"candidates"`
-	UsageMetadata *UsageMetadata `json:"usageMetadata,omitempty"`
-}
-
-// UsageMetadata represents token usage information
-type UsageMetadata struct {
-	PromptTokenCount     int `json:"promptTokenCount"`
-	CandidatesTokenCount int `json:"candidatesTokenCount"`
-	TotalTokenCount      int `json:"totalTokenCount"`
-}
-
-// Candidate represents a response candidate
-type Candidate struct {
-	Content Content `json:"content"`
-}
-
 // StreamChunk represents a chunk of streaming data
 type StreamChunk struct {
 	Text string
@@ -104,6 +81,10 @@ type StreamChunk struct {
 func (c *Client) Stream(ctx context.Context, prompt string) (<-chan StreamChunk, error) {
 	if c.apiKey == "" {
 		return nil, fmt.Errorf("api key not configured")
+	}
+
+	if c.genaiClient == nil {
+		return nil, fmt.Errorf("genai client not initialized")
 	}
 
 	// Check token limit before making request
@@ -125,112 +106,114 @@ func (c *Client) Stream(ctx context.Context, prompt string) (<-chan StreamChunk,
 	go func() {
 		defer close(ch)
 
-		// Build contents from history + current prompt
-		contents := make([]Content, 0)
-		if c.history != nil {
-			contents = append(contents, c.history.ToContents()...)
-		}
+		// Convert history to SDK format
+		historyContents := c.historyToGenaiContents()
+
 		// Add current user prompt
-		contents = append(contents, Content{
-			Role: "user",
-			Parts: []Part{
-				{Text: prompt},
-			},
+		userContent := &genai.Content{
+			Role:  "user",
+			Parts: []*genai.Part{{Text: prompt}},
+		}
+		historyContents = append(historyContents, userContent)
+
+		// Create generation config (minimal, using defaults)
+		config := c.newGenerationConfig()
+
+		// Start streaming
+		iter := c.genaiClient.Models.GenerateContentStream(ctx, c.modelID, historyContents, config)
+
+		// Convert callback pattern to channel pattern
+		type iterResult struct {
+			resp *genai.GenerateContentResponse
+			err  error
+		}
+		resultCh := make(chan iterResult, 20)
+
+		g, gCtx := errgroup.WithContext(ctx)
+		g.Go(func() error {
+			defer close(resultCh)
+			iter(func(resp *genai.GenerateContentResponse, err error) bool {
+				select {
+				case resultCh <- iterResult{resp: resp, err: err}:
+					return true
+				case <-gCtx.Done():
+					return false
+				}
+			})
+			return nil
 		})
 
-		req := StreamRequest{
-			Contents: contents,
-		}
-
-		reqBody, err := sonic.Marshal(req)
-		if err != nil {
-			ch <- StreamChunk{Err: fmt.Errorf("marshal request: %w", err)}
-			return
-		}
-
-		url := fmt.Sprintf("%s/models/gemini-2.5-flash:streamGenerateContent?key=%s", c.baseURL, c.apiKey)
-
-		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(reqBody))
-		if err != nil {
-			ch <- StreamChunk{Err: fmt.Errorf("create request: %w", err)}
-			return
-		}
-
-		httpReq.Header.Set("Content-Type", "application/json")
-
-		resp, err := c.httpClient.Do(httpReq)
-		if err != nil {
-			ch <- StreamChunk{Err: fmt.Errorf("send request: %w", err)}
-			return
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			body, err := io.ReadAll(resp.Body)
-			bodyStr := string(body)
-			if err != nil {
-				// If we can't read the error body, include the read error in the message
-				bodyStr = fmt.Sprintf("(failed to read error body: %v)", err)
+		// Wait for goroutine completion in background
+		go func() {
+			if err := g.Wait(); err != nil {
+				// Error already handled through channel
+				select {
+				case resultCh <- iterResult{err: err}:
+				default:
+				}
 			}
-			ch <- StreamChunk{Err: fmt.Errorf("api error: %s - %s", resp.Status, bodyStr)}
-			return
-		}
+		}()
 
-		// Stream response with a scanner and collect for history
 		var fullResponse strings.Builder
-		scanner := bufio.NewScanner(resp.Body)
-		for scanner.Scan() {
+
+		for {
 			select {
 			case <-ctx.Done():
 				ch <- StreamChunk{Err: fmt.Errorf("context cancelled: %w", ctx.Err())}
 				return
-			default:
-				line := scanner.Text()
-				// Parse SSE format: check for "data: " prefix
-				if text, found := strings.CutPrefix(line, "data: "); found {
-					var streamResp StreamResponse
-					if err := sonic.Unmarshal([]byte(text), &streamResp); err != nil {
-						ch <- StreamChunk{Err: fmt.Errorf("unmarshal stream chunk: %w", err)}
-						continue
+			case result, ok := <-resultCh:
+				if !ok {
+					// Channel closed, iteration complete
+					ch <- StreamChunk{Done: true}
+
+					// Add to history after stream completes
+					if c.history != nil && fullResponse.Len() > 0 {
+						c.history.AddToHistory(prompt, fullResponse.String())
 					}
+					return
+				}
+				if result.err != nil {
+					ch <- StreamChunk{Err: fmt.Errorf("stream error: %w", result.err)}
+					return
+				}
 
-					// Update token usage if available
-					if streamResp.UsageMetadata != nil {
-						c.inputTokens = streamResp.UsageMetadata.PromptTokenCount
-						c.outputTokens = streamResp.UsageMetadata.CandidatesTokenCount
-						// Update cumulative usage
-						c.cumulativeInput += c.inputTokens
-						c.cumulativeOutput += c.outputTokens
+				resp := result.resp
+				if resp == nil {
+					continue
+				}
 
-						// Check if limit exceeded after this request
-						if c.tokenLimit > 0 {
-							totalUsed := c.cumulativeInput + c.cumulativeOutput
-							if totalUsed > c.tokenLimit {
-								ch <- StreamChunk{Err: fmt.Errorf("token limit exceeded: %d/%d tokens used", totalUsed, c.tokenLimit)}
-								return
-							}
+				// Check for safety block
+				if len(resp.Candidates) > 0 && resp.Candidates[0].FinishReason == genai.FinishReasonSafety {
+					ch <- StreamChunk{Err: fmt.Errorf("response blocked by safety filters")}
+					return
+				}
+
+				// Extract text chunk
+				chunkText := extractTextFromResponse(resp)
+				if chunkText != "" {
+					fullResponse.WriteString(chunkText)
+					ch <- StreamChunk{Text: chunkText}
+				}
+
+				// Update token usage if available
+				if resp.UsageMetadata != nil {
+					c.inputTokens = int(resp.UsageMetadata.PromptTokenCount)
+					c.outputTokens = int(resp.UsageMetadata.CandidatesTokenCount)
+					// Update cumulative usage
+					c.cumulativeInput += c.inputTokens
+					c.cumulativeOutput += c.outputTokens
+
+					// Check if limit exceeded after this request
+					if c.tokenLimit > 0 {
+						totalUsed := c.cumulativeInput + c.cumulativeOutput
+						if totalUsed > c.tokenLimit {
+							ch <- StreamChunk{Err: fmt.Errorf("token limit exceeded: %d/%d tokens used", totalUsed, c.tokenLimit)}
+							return
 						}
 					}
-
-					if len(streamResp.Candidates) > 0 && len(streamResp.Candidates[0].Content.Parts) > 0 {
-						chunkText := streamResp.Candidates[0].Content.Parts[0].Text
-						fullResponse.WriteString(chunkText)
-						ch <- StreamChunk{Text: chunkText}
-					}
 				}
+
 			}
-		}
-
-		if err = scanner.Err(); err != nil {
-			ch <- StreamChunk{Err: fmt.Errorf("read response stream: %w", err)}
-			return
-		}
-
-		ch <- StreamChunk{Done: true}
-
-		// Add to history after stream completes
-		if c.history != nil && fullResponse.Len() > 0 {
-			c.history.AddToHistory(prompt, fullResponse.String())
 		}
 	}()
 
@@ -354,3 +337,4 @@ func (c *Client) UsageDisplay() string {
 	}
 	return stats.String()
 }
+

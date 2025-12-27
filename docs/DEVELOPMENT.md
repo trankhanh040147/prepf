@@ -109,6 +109,11 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 
 **Goal:** High-friction, turn-based interview loop with visceral, actionable feedback.
 
+## Code Quality Fixes
+
+- **Viewport Padding:** Fixed manual padding anti-pattern in `internal/ui/viewport.go`. Applied padding to content in `SetContent()` using `lipgloss.Style.Padding()` (not in `View()` as that breaks viewport scrolling). Removed manual string manipulation with for loops.
+- **Markdown Rendering:** Added markdown rendering support using `glamour` library. All viewport content is now rendered as markdown, properly styling elements like `*italic*` and `**bold**`.
+
 ### 1. Sequential Interview Engine
 - [ ] **Turn-Based Flow:** Strictly one question at a time. User input is locked while AI "speaks."
 - [ ] **AI Orchestration:** AI decides when to follow up on an answer or pivot to a new topic via hidden `<NEXT>` signals.

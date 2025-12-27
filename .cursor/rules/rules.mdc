@@ -29,6 +29,9 @@ alwaysApply: true
 - **Styling (`lipgloss`):**
   - Use `lipgloss.Place()` for alignment.
   - **Never** use `strings.Repeat` for padding/borders.
+  - **Never** use `for` loops with string concatenation for padding/borders.
+  - For viewports: Apply padding to content in `SetContent()` using `lipgloss.Style.Padding().Render()`, not in `View()` (padding View() output breaks scrolling).
+  - For other components: Apply padding declaratively in `View()` using `lipgloss.Style.Padding()`.
   - Center via style width; never calculate string lengths manually.
 - **Vim Navigation:** Use `j/k`, `g/G`, `/`. Update `internal/ui/help.go` immediately if shortcuts change.
 - **Keybindings Strategy:**

@@ -129,7 +129,7 @@ func (m *BaseModel) renderSearch() string {
 	searchPrompt := "/ " + searchView
 
 	// Style the search prompt
-	searchStyle := lipgloss.NewStyle().Width(m.Width()).Padding(0, 1).BorderBottom(true)
+	searchStyle := lipgloss.NewStyle().Width(m.Width()).Padding(0, config.StatusBarPadding).BorderBottom(true)
 	if m.noColor {
 		searchStyle = searchStyle.BorderStyle(lipgloss.NormalBorder())
 	} else {

@@ -9,6 +9,7 @@ import (
 type MockKeyMap struct {
 	ui.KeyMap
 	Surrender key.Binding
+	Skip      key.Binding
 }
 
 // DefaultMockKeyMap returns the default keymap for mock interviews
@@ -19,6 +20,10 @@ func DefaultMockKeyMap() MockKeyMap {
 		Surrender: key.NewBinding(
 			key.WithKeys("tab"),
 			key.WithHelp("tab", "surrender"),
+		),
+		Skip: key.NewBinding(
+			key.WithKeys("esc"),
+			key.WithHelp("esc", "skip config"),
 		),
 	}
 }

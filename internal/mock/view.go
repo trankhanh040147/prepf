@@ -10,6 +10,43 @@ import (
 	"github.com/trankhanh040147/prepf/internal/ui"
 )
 
+// renderConfiguring renders configuration state
+func (m *Model) renderConfiguring() string {
+	width := m.Width()
+	height := m.Height()
+	if width == 0 {
+		width = 80
+	}
+	if height == 0 {
+		height = 20
+	}
+
+	// Render form if available
+	formView := ""
+	if m.configForm != nil {
+		formView = m.configForm.View()
+	}
+
+	// Add skip instruction
+	skipInstruction := "Press Esc to skip configuration"
+	skipStyle := lipgloss.NewStyle().
+		Italic(true).
+		Padding(1, 0)
+	if !m.noColor {
+		skipStyle = skipStyle.Foreground(lipgloss.Color("8"))
+	}
+
+	content := formView
+	if formView != "" {
+		content = lipgloss.JoinVertical(lipgloss.Left, formView, "", skipStyle.Render(skipInstruction))
+	} else {
+		content = skipStyle.Render(skipInstruction)
+	}
+
+	// Center the content
+	return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, content)
+}
+
 // renderWaiting renders waiting state
 func (m *Model) renderWaiting() string {
 	// Ensure viewport has valid size

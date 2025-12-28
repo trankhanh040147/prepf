@@ -10,6 +10,65 @@
     "editor.codeActionsOnSave": {
       "source.organizeImports": "explicit"
     }
-  }
+  },
+  
+  // --- Vim Key Handling ---
+  "vim.handleKeys": {
+    "<C-b>": false,  // Let Cursor handle File Search
+    "<C-p>": false,  // Let Cursor handle File Search
+    "<C-f>": false,  // Let Cursor handle Find/Search View
+    "<C-a>": false,  // Let Cursor handle Select All (optional, Vim uses ggVG)
+    "<C-x>": false,  // Let Cursor handle Cut (optional)
+    "<C-c>": false,  // Let Cursor handle Copy (optional)
+    "<C-v>": false,   // Let Cursor handle Paste (optional)
+    "<C-w>": false, //      (keep this for Window splitting)
+    // REMOVED: <C-d>, <C-u> (keep these for Scrolling)
+    // REMOVED: <C-o>, <C-i> (keep these for Jump List)
+  },
+
+  // --- Standard Settings ---
+  "vim.scrolloff": 5,
+  "vim.incsearch": true,
+  "editor.cursorSurroundingLines": 5, // Keeps native editor in sync with Vim scrolloff
+
+  // --- Plugins ---
+  "vim.highlightedyank.enable": true,
+
+  // --- Mappings ---
+  "vim.insertModeKeyBindings": [
+    { "before": ["j", "k"], "after": ["<Esc>"] }
+  ],
+
+  "vim.normalModeKeyBindingsNonRecursive": [
+    { "before": ["Q"], "after": ["g", "q"] }
+  ],
+
+  // Override Vim defaults - use normalModeKeyBindings (recursive) to override Vim's built-in mappings
+  "vim.normalModeKeyBindings": [
+    // Go to Definition (override Vim's default gd = go to local declaration)
+    {
+      "before": ["g", "d"],
+      "commands": ["editor.action.revealDefinition"]
+    },
+    // Go to References
+    {
+      "before": ["g", "r"],
+      "commands": ["editor.action.goToReferences"]
+    },
+    // Go to Implementation (override Vim's default gi = go to last insert position)
+    {
+      "before": ["g", "i"],
+      "commands": ["editor.action.goToImplementation"]
+    },
+    // Go to Usages (Find All References)
+    {
+      "before": ["g", "u"],
+      "commands": ["references-view.findReferences"]
+    }
+  ],
+  "git.blame.editorDecoration.enabled": true,
+  "cursor.terminal.usePreviewBox": true,
+  "cursor.cpp.enablePartialAccepts": true,
+  "git.blame.statusBarItem.enabled": true
 }
 

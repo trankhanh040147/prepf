@@ -7,6 +7,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh"
 	"github.com/trankhanh040147/prepf/internal/ai"
 )
 
@@ -46,6 +47,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case TimeTickMsg:
 		return m.handleTimeTick()
 
+	case ConfigSubmittedMsg:
+		return m.handleConfigSubmitted(msg)
+
+	case ConfigSkippedMsg:
+		return m.handleConfigSkipped()
+
 	case ai.StreamStartedMsg:
 		return m.handleStreamStarted(msg)
 
@@ -59,21 +66,43 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.handleStreamError(msg)
 
 	case tea.KeyMsg:
-		// Only handle global keys like Quit and Help when an input is NOT focused
-		if !m.answerInput.Focused() {
+		// Handle state-specific keys first to allow form to process all keys
+		switch m.state {
+		case InterviewConfiguring:
+			// Ensure answerInput is not focused - form should receive all keys
+			m.answerInput.Blur()
+
+			// Handle skip key (Esc) - intercept this before form
+			if key.Matches(msg, m.keys.Skip) {
+				return m.handleConfigSkipped()
+			}
+			// Handle global keys (Quit, Help) - only check these, let form handle everything else
 			if key.Matches(msg, m.keys.Quit) {
 				m.cancelCtx()
 				return m, tea.Quit
 			}
-
 			if key.Matches(msg, m.keys.Help) {
 				m.toggleHelp()
 				return m, nil
 			}
-		}
+			// Let form handle ALL keys (Enter, Tab, Space, arrows, etc.)
+			// The form will handle navigation, selection, and submission internally
+			if m.configForm != nil {
+				var cmd tea.Cmd
+				formModel, cmd := m.configForm.Update(msg)
+				// Type assert back to *huh.Form
+				if form, ok := formModel.(*huh.Form); ok {
+					m.configForm = form
+					// Check if form completed after any key press
+					// Form completes when user presses Enter on the last field
+					if m.configForm.State == huh.StateCompleted {
+						return m.handleConfigSubmitted(ConfigSubmittedMsg{})
+					}
+				}
+				return m, cmd
+			}
+			return m, nil
 
-		// Handle state-specific keys
-		switch m.state {
 		case InterviewUserInput:
 			if key.Matches(msg, m.keys.Surrender) {
 				return m.handleSurrender()
@@ -91,6 +120,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if !m.answerInput.Focused() && key.Matches(msg, m.keys.Quit) {
 				m.cancelCtx()
 				return m, tea.Quit
+			}
+
+		default:
+			// Handle global keys (Quit, Help) for other states
+			if !m.answerInput.Focused() {
+				if key.Matches(msg, m.keys.Quit) {
+					m.cancelCtx()
+					return m, tea.Quit
+				}
+				if key.Matches(msg, m.keys.Help) {
+					m.toggleHelp()
+					return m, nil
+				}
 			}
 		}
 	}
@@ -118,10 +160,19 @@ func (m *Model) handleContextLoaded(msg ContextLoadedMsg) (*Model, tea.Cmd) {
 
 // buildInitialPrompt builds the initial interview prompt
 func (m *Model) buildInitialPrompt() string {
+	topicInstructions := BuildTopicInstructions(m.selectedTopics, m.excludedTopics)
+
 	if m.resumeContent != "" {
-		return fmt.Sprintf(InitialPromptTemplate, m.resumeContent)
+		return fmt.Sprintf(InitialPromptTemplate, m.resumeContent, topicInstructions)
 	}
-	return "Conduct a technical interview. Ask one question at a time. When you want to move to the next question, include the signal <NEXT> at the end of your response. When you've finished all questions, include the signal <ROAST> at the end of your final response."
+
+	// Fallback prompt without resume
+	basePrompt := "Conduct a technical interview following these guidelines:\n- Ask questions that a real interviewer would ask for this role/experience level\n- Vary question types (conceptual, practical, problem-solving)\n- Avoid repeating similar questions. Reference conversation history to ensure variety\n- Ask follow-up questions based on the candidate's answers, not generic questions\n- Ask one question at a time\n- When you want to move to the next question, include the signal <NEXT> at the end of your response\n- When you've finished all questions, include the signal <ROAST> at the end of your final response."
+
+	if topicInstructions != "" {
+		return topicInstructions + "\n\n" + basePrompt
+	}
+	return basePrompt
 }
 
 // handleStreamStarted processes stream start
@@ -209,8 +260,14 @@ func (m *Model) handleAnswerSubmit() (*Model, tea.Cmd) {
 	m.aiResponseBuffer.Reset()
 	m.answerInput.Blur()
 
+	// Add variety instruction to ensure questions don't repeat
+	// The AI client maintains conversation history, so this instruction
+	// will be applied in context of all previous questions
+	varietyInstruction := "\n\n[Based on the conversation so far, ask a different type of question. Avoid repetition. Reference what has been discussed to ensure variety.]"
+	answerWithContext := answer + varietyInstruction
+
 	// Send answer to AI
-	return m, m.aiClient.StreamStartCmd(m.ctx, answer)
+	return m, m.aiClient.StreamStartCmd(m.ctx, answerWithContext)
 }
 
 // handleAnswerSubmitted processes submitted answer (alternative entry point)
@@ -225,7 +282,11 @@ func (m *Model) handleAnswerSubmitted(msg AnswerSubmittedMsg) (*Model, tea.Cmd) 
 	m.aiResponseBuffer.Reset()
 	m.answerInput.Blur()
 
-	return m, m.aiClient.StreamStartCmd(m.ctx, msg.Answer)
+	// Add variety instruction to ensure questions don't repeat
+	varietyInstruction := "\n\n[Based on the conversation so far, ask a different type of question. Avoid repetition. Reference what has been discussed to ensure variety.]"
+	answerWithContext := msg.Answer + varietyInstruction
+
+	return m, m.aiClient.StreamStartCmd(m.ctx, answerWithContext)
 }
 
 // handleQuestionReceived processes a received question
@@ -303,8 +364,26 @@ func (m *Model) isSessionLimitReached() bool {
 		return true
 	}
 	elapsed := time.Since(m.sessionStartTime)
-	if elapsed >= MaxDurationMinutes*time.Minute {
-		return true
-	}
-	return false
+	return elapsed >= MaxDurationMinutes*time.Minute
+}
+
+// handleConfigSubmitted processes configuration form submission
+func (m *Model) handleConfigSubmitted(msg ConfigSubmittedMsg) (*Model, tea.Cmd) {
+	// The form has already updated m.selectedTopics and m.excludedTopics via pointers
+	// No need to copy from message - form mutates model slices directly
+	// Transition to waiting state and load context
+	m.state = InterviewWaiting
+	return m, LoadContextCmd(m.resumePath)
+}
+
+// handleConfigSkipped processes configuration skip
+func (m *Model) handleConfigSkipped() (*Model, tea.Cmd) {
+	// Set empty topic lists (all topics allowed)
+	m.selectedTopics = make([]string, 0)
+	m.excludedTopics = make([]string, 0)
+	m.skipConfig = true
+
+	// Transition to waiting state and load context
+	m.state = InterviewWaiting
+	return m, LoadContextCmd(m.resumePath)
 }

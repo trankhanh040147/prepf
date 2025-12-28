@@ -6,8 +6,10 @@ import tea "github.com/charmbracelet/bubbletea"
 type InterviewState int
 
 const (
+	// InterviewConfiguring is the state for pre-mock topic configuration
+	InterviewConfiguring InterviewState = iota
 	// InterviewWaiting is the initial state, waiting for context to load
-	InterviewWaiting InterviewState = iota
+	InterviewWaiting
 	// InterviewAIThinking indicates AI is generating a question/response
 	InterviewAIThinking
 	// InterviewUserInput indicates waiting for user to submit an answer
@@ -46,6 +48,13 @@ type SessionExpiredMsg struct{}
 // TimeTickMsg is sent periodically to update the session timer
 type TimeTickMsg struct{}
 
+// ConfigSubmittedMsg is sent when configuration form is submitted
+// Form updates model slices directly via pointers, so no payload needed
+type ConfigSubmittedMsg struct{}
+
+// ConfigSkippedMsg is sent when configuration is skipped
+type ConfigSkippedMsg struct{}
+
 // LoadContextCmd returns a tea.Cmd that loads context from a file
 func LoadContextCmd(path string) tea.Cmd {
 	return func() tea.Msg {
@@ -53,4 +62,3 @@ func LoadContextCmd(path string) tea.Cmd {
 		return ContextLoadedMsg{Content: content, Err: err}
 	}
 }
-

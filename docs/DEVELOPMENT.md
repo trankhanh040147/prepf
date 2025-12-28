@@ -113,6 +113,19 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 
 - **Viewport Padding:** Fixed manual padding anti-pattern in `internal/ui/viewport.go`. Applied padding to content in `SetContent()` using `lipgloss.Style.Padding()` (not in `View()` as that breaks viewport scrolling). Removed manual string manipulation with for loops.
 - **Markdown Rendering:** Added markdown rendering support using `glamour` library. All viewport content is now rendered as markdown, properly styling elements like `*italic*` and `**bold**`.
+- **Slice Mutation Bug:** Fixed critical bug in `buildConfigForm` where slices were passed by value instead of pointers, causing user topic selections to be lost. Changed function signature to accept `*[]string` pointers and updated call site. Form now mutates model slices directly via pointers.
+- **Enter/Tab Navigation:** Fixed key handling in configuration form - moved state-specific key handling before global keys to ensure form receives Enter/Tab keys for navigation and selection. Enter/Space now toggle multi-select items, Tab moves between fields correctly.
+- **Redundant Data Flow:** Simplified `ConfigSubmittedMsg` to empty struct since form updates model slices directly via pointers. Removed unnecessary slice copying in `handleConfigSubmitted`.
+
+## New Features
+
+- [x] **Pre-mock Topic Customization:** Added skippable configuration screen using `huh` forms for selecting topics to focus on and exclude. Users can choose from: Go, System Design, Algorithms, Data Structures, Databases, Networking, Concurrency, Testing. Press `Esc` to skip configuration.
+- [x] **Enhanced Prompts:** Improved AI prompts to generate realistic, varied interview questions. Prompts now include:
+  - Instructions to ask questions that real interviewers would ask
+  - Variety guidance to avoid repetitive questions
+  - Conversation history awareness for question diversity
+  - Topic-specific instructions based on user selections
+- [x] **Conversation History Integration:** Added variety instructions to each answer submission to ensure AI references conversation history and avoids repetition.
 
 ### 1. Sequential Interview Engine
 - [ ] **Turn-Based Flow:** Strictly one question at a time. User input is locked while AI "speaks."

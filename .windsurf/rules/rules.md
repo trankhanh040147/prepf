@@ -1,5 +1,7 @@
 ---
-alwaysApply: true
+trigger: always_on
+description:
+globs:
 ---
 # prepf - Technical Interview Coach CLI
 

@@ -105,7 +105,7 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 - [x] GitHub Actions workflow with testing, linting, vulnerability scanning, and multi-platform builds
 
 # v0.1.1 - Mock Module (The Gauntlet MVP)
-**Status:** Implemented, In review
+**Status:** ✅ Complete
 
 **Goal:** High-friction, turn-based interview loop with visceral, actionable feedback.
 
@@ -116,6 +116,13 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 - **Slice Mutation Bug:** Fixed critical bug in `buildConfigForm` where slices were passed by value instead of pointers, causing user topic selections to be lost. Changed function signature to accept `*[]string` pointers and updated call site. Form now mutates model slices directly via pointers.
 - **Enter/Tab Navigation:** Fixed key handling in configuration form - moved state-specific key handling before global keys to ensure form receives Enter/Tab keys for navigation and selection. Enter/Space now toggle multi-select items, Tab moves between fields correctly.
 - **Redundant Data Flow:** Simplified `ConfigSubmittedMsg` to empty struct since form updates model slices directly via pointers. Removed unnecessary slice copying in `handleConfigSubmitted`.
+- **Keybinding Issues (v0.1.1 Final):**
+  - **Global Quit Keys:** Fixed Ctrl+C and Esc handling across all states. Ctrl+C now works consistently to quit. Esc blurs input when focused, otherwise acts as back/cancel.
+  - **Input State Escape:** Added explicit Esc handling in `InterviewUserInput` state to blur textinput before checking quit keys. Prevents input from consuming escape keys.
+  - **Form Navigation Clarity:** Updated form field descriptions to clarify that Space toggles selection, Tab navigates fields, Enter submits on last field.
+  - **Roast Display:** Fixed micro-roast disappearing immediately after surrender. Added `showSurrenderFeedback` flag to persist display until next question starts streaming.
+  - **Final Roast Generation:** Implemented actual AI-generated roast feedback instead of placeholder text. Roast now streams from AI with grade-based assessment.
+  - **State-Specific Key Handling:** Established clear precedence: (1) state-specific intercepts, (2) component updates, (3) global fallbacks. Prevents components from blocking critical quit keys.
 
 ## New Features
 
@@ -128,23 +135,23 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 - [x] **Conversation History Integration:** Added variety instructions to each answer submission to ensure AI references conversation history and avoids repetition.
 
 ### 1. Sequential Interview Engine
-- [ ] **Turn-Based Flow:** Strictly one question at a time. User input is locked while AI "speaks."
-- [ ] **AI Orchestration:** AI decides when to follow up on an answer or pivot to a new topic via hidden `<NEXT>` signals.
-- [ ] **Context Loader (v0):** Support for `.txt` and `.md` resume ingestion via `os.ReadFile`.
-- [ ] **Protocol Engine:** `regexp` parser to intercept hidden `<NEXT>` and `<ROAST>` signals.
+- [x] **Turn-Based Flow:** Strictly one question at a time. User input is locked while AI "speaks."
+- [x] **AI Orchestration:** AI decides when to follow up on an answer or pivot to a new topic via hidden `<NEXT>` signals.
+- [x] **Context Loader (v0):** Support for `.txt` and `.md` resume ingestion via `os.ReadFile`.
+- [x] **Protocol Engine:** `regexp` parser to intercept hidden `<NEXT>` and `<ROAST>` signals.
 
 ### 2. The "Roast" Mechanics
-- [ ] **The "Surrender" Mechanic:** `Tab` key injects a Shadow Prompt: *"User surrenders. Give a snappy 1-2 sentence correction and move on."*
-- [ ] **Inline Micro-Roast UI:** Mid-interview failures/surrenders styled in **Bold Red** via `lipgloss` for immediate feedback.
-- [ ] **The Verdict:** 
+- [x] **The "Surrender" Mechanic:** `Tab` key injects a Shadow Prompt: *"User surrenders. Give a snappy 1-2 sentence correction and move on."*
+- [x] **Inline Micro-Roast UI:** Mid-interview failures/surrenders styled in **Bold Red** via `lipgloss` for immediate feedback.
+- [x] **The Verdict:** 
     - **Visual Grade:** High-contrast `lipgloss` box displaying **Letter Grade (A-F)**.
     - **Persona Labels:** Descriptive status (e.g., `[A] - ARCHITECT MATERIAL`, `[F] - TERMINATED`).
-- [ ] **The Roast:** 3-point remediation plan rendered as **Interactive Buttons** (Placeholders for Gym Mode).
+- [x] **The Roast:** AI-generated assessment with 3-point remediation plan rendered as **Interactive Buttons** (Placeholders for Gym Mode).
 
 ### 3. Session Governance
-- [ ] **Safety Valve:** Hard limit (10 questions/15 mins).
-- [ ] **Graceful Exit:** Status bar triggers an **Inverted Pulsing [FINAL QUESTION] Alert** (`tea.Tick`); system forces `<ROAST>` after the current turn.
-- [ ] **Metadata Tracking:** Silently track "Surrender" count for future grading logic.
+- [x] **Safety Valve:** Hard limit (10 questions/15 mins).
+- [x] **Graceful Exit:** Status bar triggers an **Inverted Pulsing [FINAL QUESTION] Alert** (`tea.Tick`); system forces `<ROAST>` after the current turn.
+- [x] **Metadata Tracking:** Silently track "Surrender" count for future grading logic.
 
 # v0.1.2 - The Scalable Standard
 **Status:** In planning (Structured Logic & Persistence)

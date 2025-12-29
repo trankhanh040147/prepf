@@ -35,12 +35,16 @@ alwaysApply: true
   - Center via style width; never calculate string lengths manually.
 - **Vim Navigation:** Use `j/k`, `g/G`, `/`. Update `internal/ui/help.go` immediately if shortcuts change.
 - **Keybindings Strategy:**
-  - Map `Enter`/`Tab` to `save() + nextField()`.
-  - `Tab` navigation must work in both editing and navigation modes.
-  - Show help with `?`. Define help text in `constants` (never inline).
+  - **Global Keys:** `q`/`Ctrl+C` (quit), `?` (help), `Esc` (back/cancel) must work in ALL states unless explicitly blocked.
+  - **State-Specific Keys:** Handle in order: (1) state-specific intercepts, (2) component updates, (3) global fallbacks.
+  - **Focused Components:** When `textinput` or forms are focused, they consume most keys. Explicitly handle `Esc`, `Ctrl+C` BEFORE passing to component.
+  - **Form Navigation:** `huh.Form` handles Enter/Tab internally. Let form process ALL keys except global quit/help. Form completes on Enter at last field.
+  - **Input Escape:** Always provide Esc to blur/cancel when input is focused. Check `component.Focused()` before handling quit keys.
+  - **Help Text:** Define in `constants` (never inline). Update immediately when keybindings change.
 - **Key Handling:** Use `key.Matches()` with centralized `KeyMap` structs. **Never** use `msg.String()`.
 - **TUI Structure:** Decompose `Update`/`View` > 20 complexity into helpers. Derive boolean flags inside helpers.
 - **CRUD State:** `isEditMode` depends on **persistence** (e.g., non-nil ID), not content presence. Treat pre-filled new entities as `Create`.
+- **Streaming Content Display:** When showing transient content (micro-roasts, notifications), use persistent flags instead of clearing immediately. Clear flag when new content arrives, not on first render.
 
 ### 3. Core Go Implementation & Structure
 - **File Size (CRITICAL):** Manage code files into small parts to reduce token costs. Split large files, keep functions focused, prefer smaller modules.

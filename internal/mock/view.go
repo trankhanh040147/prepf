@@ -117,13 +117,12 @@ func (m *Model) renderUserInput() string {
 	inputBox := inputBoxStyle.Render(inputView)
 	inputBoxHeight := lipgloss.Height(inputBox)
 
-	// Show surrender micro-roast if present
+	// Show surrender micro-roast if flagged to display
 	microRoastHeight := 0
 	microRoastText := ""
-	if m.surrenderFeedback != "" {
+	if m.showSurrenderFeedback && m.surrenderFeedback != "" {
 		microRoastText = RenderMicroRoast(m.surrenderFeedback, m.noColor)
 		microRoastHeight = lipgloss.Height(microRoastText) + 1 // +1 for spacing
-		m.surrenderFeedback = ""                               // Clear after showing
 	}
 
 	// Ensure viewport has valid dimensions

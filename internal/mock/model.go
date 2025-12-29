@@ -48,8 +48,9 @@ type Model struct {
 	remediationTopics []string
 
 	// Surrender micro-roast
-	surrenderFeedback string
-	isSurrenderMode   bool // Track if we're waiting for surrender micro-roast
+	surrenderFeedback     string
+	isSurrenderMode       bool // Track if we're waiting for surrender micro-roast
+	showSurrenderFeedback bool // Track if micro-roast should be displayed
 
 	// Topic configuration
 	selectedTopics []string

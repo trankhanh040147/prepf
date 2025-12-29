@@ -60,7 +60,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.handleStreamChunk(msg)
 
 	case ai.StreamDoneMsg:
-		return m.handleStreamDone()
+		return m.handleStreamDone(msg)
 
 	case ai.StreamErrorMsg:
 		return m.handleStreamError(msg)
@@ -104,9 +104,23 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 
 		case InterviewUserInput:
+			// Handle Esc to blur input or quit
+			if key.Matches(msg, m.keys.Back) {
+				if m.answerInput.Focused() {
+					m.answerInput.Blur()
+					return m, nil
+				}
+			}
+			// Handle Ctrl+C to quit
+			if key.Matches(msg, m.keys.Quit) {
+				m.cancelCtx()
+				return m, tea.Quit
+			}
+			// Handle surrender (Tab)
 			if key.Matches(msg, m.keys.Surrender) {
 				return m.handleSurrender()
 			}
+			// Handle answer submit (Enter)
 			if key.Matches(msg, m.keys.Enter) {
 				return m.handleAnswerSubmit()
 			}
@@ -116,23 +130,21 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tiCmd
 
 		case InterviewRoasting:
-			// Allow quit only when input not focused
-			if !m.answerInput.Focused() && key.Matches(msg, m.keys.Quit) {
+			// Allow quit in roasting state
+			if key.Matches(msg, m.keys.Quit) {
 				m.cancelCtx()
 				return m, tea.Quit
 			}
 
 		default:
 			// Handle global keys (Quit, Help) for other states
-			if !m.answerInput.Focused() {
-				if key.Matches(msg, m.keys.Quit) {
-					m.cancelCtx()
-					return m, tea.Quit
-				}
-				if key.Matches(msg, m.keys.Help) {
-					m.toggleHelp()
-					return m, nil
-				}
+			if key.Matches(msg, m.keys.Quit) {
+				m.cancelCtx()
+				return m, tea.Quit
+			}
+			if key.Matches(msg, m.keys.Help) {
+				m.toggleHelp()
+				return m, nil
 			}
 		}
 	}
@@ -190,13 +202,21 @@ func (m *Model) handleStreamChunk(msg ai.StreamChunkMsg) (*Model, tea.Cmd) {
 }
 
 // handleStreamDone processes stream completion
-func (m *Model) handleStreamDone() (*Model, tea.Cmd) {
+func (m *Model) handleStreamDone(msg ai.StreamDoneMsg) (*Model, tea.Cmd) {
 	fullResponse := m.aiResponseBuffer.String()
 
 	// Check if this was a surrender (micro-roast) response
 	if m.isSurrenderMode {
 		return m.handleSurrenderStreamDone()
 	}
+
+	// Check if this was a roast response
+	if m.state == InterviewRoasting {
+		return m.handleRoastStreamDone()
+	}
+
+	// Clear surrender feedback when new question arrives
+	m.showSurrenderFeedback = false
 
 	content, _, hasRoast := ParseSignals(fullResponse)
 
@@ -322,8 +342,16 @@ func (m *Model) handleSurrenderStreamDone() (*Model, tea.Cmd) {
 	microRoast := m.aiResponseBuffer.String()
 	m.surrenderFeedback = strings.TrimSpace(microRoast)
 	m.isSurrenderMode = false
+	m.showSurrenderFeedback = true // Flag to display micro-roast
 
-	// Move to next question
+	// Transition to user input state to show micro-roast
+	// User will see the micro-roast and can read it before next question
+	m.state = InterviewUserInput
+	m.answerInput.Focus()
+	m.answerInput.SetValue("")
+	m.currentAnswer = ""
+
+	// Move to next question after a brief pause
 	prompt := "Continue with the next question."
 	m.aiResponseBuffer.Reset()
 	return m, m.aiClient.StreamStartCmd(m.ctx, prompt)
@@ -334,9 +362,31 @@ func (m *Model) handleRoast() (*Model, tea.Cmd) {
 	m.state = InterviewRoasting
 	m.roastGrade = CalculateGrade(m.surrenderCount, m.questionCount)
 	m.roastPersona = GetPersonaLabel(m.roastGrade)
-	m.roastFeedback = "Great job completing the interview!"
-	m.remediationTopics = []string{"Data Structures", "Algorithms", "System Design"}
 	m.answerInput.Blur()
+
+	// Generate actual roast from AI
+	roastPrompt := fmt.Sprintf(
+		"The interview is complete. Provide a final assessment in 2-3 sentences. "+
+			"The candidate surrendered %d out of %d questions. "+
+			"Be honest but constructive. Grade: %s (%s). "+
+			"Also list 3 specific topics they should study based on the conversation.",
+		m.surrenderCount, m.questionCount, m.roastGrade, m.roastPersona,
+	)
+
+	// Start streaming roast feedback
+	m.aiResponseBuffer.Reset()
+	return m, m.aiClient.StreamStartCmd(m.ctx, roastPrompt)
+}
+
+// handleRoastStreamDone handles completion of roast stream
+func (m *Model) handleRoastStreamDone() (*Model, tea.Cmd) {
+	feedback := m.aiResponseBuffer.String()
+	m.roastFeedback = strings.TrimSpace(feedback)
+
+	// Extract remediation topics (simple parsing - look for topics mentioned)
+	// For v0.1.1, use placeholder topics
+	m.remediationTopics = []string{"Data Structures", "Algorithms", "System Design"}
+
 	return m, nil
 }
 

@@ -18,14 +18,14 @@ func buildConfigForm(selectedTopics *[]string, excludedTopics *[]string) *huh.Fo
 	// Multi-select for topics to focus on
 	focusField := huh.NewMultiSelect[string]().
 		Title("Topics to focus on").
-		Description("Select topics you want to be asked about (optional, leave empty for all topics). Use ↑/↓ to navigate, Enter/Space to toggle, Tab to move to next field.").
+		Description("Select topics you want to be asked about (optional, leave empty for all topics). Use ↑/↓ to navigate, Space to toggle selection, Tab to move to next field.").
 		Options(focusOptions...).
 		Value(selectedTopics)
 
 	// Multi-select for topics to exclude
 	excludeField := huh.NewMultiSelect[string]().
 		Title("Topics to exclude").
-		Description("Select topics you want to avoid (optional). Use ↑/↓ to navigate, Enter/Space to toggle, Tab to move to next field, Enter on last field to submit.").
+		Description("Select topics you want to avoid (optional). Use ↑/↓ to navigate, Space to toggle selection, Tab to go back, Enter to begin interview.").
 		Options(excludeOptions...).
 		Value(excludedTopics)
 

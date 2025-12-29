@@ -104,20 +104,73 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 ### CI/CD 
 - [x] GitHub Actions workflow with testing, linting, vulnerability scanning, and multi-platform builds
 
-# v0.1.1 - Mock Module (The Gauntlet)
+# v0.1.1 - Mock Module (The Gauntlet MVP)
+**Status:** ✅ Complete
 
-**Status:** Ideas, not planned yet.
-// TODO: Help me plan details for this phase
+**Goal:** High-friction, turn-based interview loop with visceral, actionable feedback.
 
-**Goal:** MVP of "The Gauntlet" - focus on the _Roast_.
-- [ ] **Context Loader:** CV/Resume reader (Markdown/PDF-text), tech stack selector (Bubbletea list)
-- [ ] **Interview Loop (TUI):** Split view (AI Question top, User Input bottom), "I don't know" shortcut (Tab)
-- [ ] **Roast Renderer:** Markdown renderer (Glamour) for harsh feedback, save transcript
-- [ ] **System Prompt v1:** "Senior Architect" persona that penalizes fluff
+## Code Quality Fixes
+
+- **Viewport Padding:** Fixed manual padding anti-pattern in `internal/ui/viewport.go`. Applied padding to content in `SetContent()` using `lipgloss.Style.Padding()` (not in `View()` as that breaks viewport scrolling). Removed manual string manipulation with for loops.
+- **Markdown Rendering:** Added markdown rendering support using `glamour` library. All viewport content is now rendered as markdown, properly styling elements like `*italic*` and `**bold**`.
+- **Slice Mutation Bug:** Fixed critical bug in `buildConfigForm` where slices were passed by value instead of pointers, causing user topic selections to be lost. Changed function signature to accept `*[]string` pointers and updated call site. Form now mutates model slices directly via pointers.
+- **Enter/Tab Navigation:** Fixed key handling in configuration form - moved state-specific key handling before global keys to ensure form receives Enter/Tab keys for navigation and selection. Enter/Space now toggle multi-select items, Tab moves between fields correctly.
+- **Redundant Data Flow:** Simplified `ConfigSubmittedMsg` to empty struct since form updates model slices directly via pointers. Removed unnecessary slice copying in `handleConfigSubmitted`.
+- **Keybinding Issues (v0.1.1 Final):**
+  - **Global Quit Keys:** Fixed Ctrl+C and Esc handling across all states. Ctrl+C now works consistently to quit. Esc blurs input when focused, otherwise acts as back/cancel.
+  - **Input State Escape:** Added explicit Esc handling in `InterviewUserInput` state to blur textinput before checking quit keys. Prevents input from consuming escape keys.
+  - **Form Navigation Clarity:** Updated form field descriptions to clarify that Space toggles selection, Tab navigates fields, Enter submits on last field.
+  - **Roast Display:** Fixed micro-roast disappearing immediately after surrender. Added `showSurrenderFeedback` flag to persist display until next question starts streaming.
+  - **Final Roast Generation:** Implemented actual AI-generated roast feedback instead of placeholder text. Roast now streams from AI with grade-based assessment.
+  - **State-Specific Key Handling:** Established clear precedence: (1) state-specific intercepts, (2) component updates, (3) global fallbacks. Prevents components from blocking critical quit keys.
+
+## New Features
+
+- [x] **Pre-mock Topic Customization:** Added skippable configuration screen using `huh` forms for selecting topics to focus on and exclude. Users can choose from: Go, System Design, Algorithms, Data Structures, Databases, Networking, Concurrency, Testing. Press `Esc` to skip configuration.
+- [x] **Enhanced Prompts:** Improved AI prompts to generate realistic, varied interview questions. Prompts now include:
+  - Instructions to ask questions that real interviewers would ask
+  - Variety guidance to avoid repetitive questions
+  - Conversation history awareness for question diversity
+  - Topic-specific instructions based on user selections
+- [x] **Conversation History Integration:** Added variety instructions to each answer submission to ensure AI references conversation history and avoids repetition.
+
+### 1. Sequential Interview Engine
+- [x] **Turn-Based Flow:** Strictly one question at a time. User input is locked while AI "speaks."
+- [x] **AI Orchestration:** AI decides when to follow up on an answer or pivot to a new topic via hidden `<NEXT>` signals.
+- [x] **Context Loader (v0):** Support for `.txt` and `.md` resume ingestion via `os.ReadFile`.
+- [x] **Protocol Engine:** `regexp` parser to intercept hidden `<NEXT>` and `<ROAST>` signals.
+
+### 2. The "Roast" Mechanics
+- [x] **The "Surrender" Mechanic:** `Tab` key injects a Shadow Prompt: *"User surrenders. Give a snappy 1-2 sentence correction and move on."*
+- [x] **Inline Micro-Roast UI:** Mid-interview failures/surrenders styled in **Bold Red** via `lipgloss` for immediate feedback.
+- [x] **The Verdict:** 
+    - **Visual Grade:** High-contrast `lipgloss` box displaying **Letter Grade (A-F)**.
+    - **Persona Labels:** Descriptive status (e.g., `[A] - ARCHITECT MATERIAL`, `[F] - TERMINATED`).
+- [x] **The Roast:** AI-generated assessment with 3-point remediation plan rendered as **Interactive Buttons** (Placeholders for Gym Mode).
+
+### 3. Session Governance
+- [x] **Safety Valve:** Hard limit (10 questions/15 mins).
+- [x] **Graceful Exit:** Status bar triggers an **Inverted Pulsing [FINAL QUESTION] Alert** (`tea.Tick`); system forces `<ROAST>` after the current turn.
+- [x] **Metadata Tracking:** Silently track "Surrender" count for future grading logic.
+
+# v0.1.2 - The Scalable Standard
+**Status:** In planning (Structured Logic & Persistence)
+
+- [ ] **Function Calling:** Migrate to Gemini Tool Use for state transitions (`pivot_topic`, `finalize_roast`).
+- [ ] **PDF Support:** Native resume parsing via `ledongthuc/pdf`.
+- [ ] **Persistence:** Save transcripts to `~/.local/share/prepf/history/` as JSON.
+- [ ] **Gym Integration:** Activate "Remediation Buttons" to launch targeted sessions in **The Gym**.
 
 ---
 
-# v0.1.2 - Gym Mode
+## Future Considerations (v0.2.0+)
+- **Hybrid Grading:** Implement "Grade Ceilings" based on the number of `Tab` surrenders.
+- **Dynamic Pressure:** TUI border colors shift (Green → Red) based on "Roast" severity.
+- **Knowledge Graph:** Real-time side-panel visualization of technical "Weak Spots."
+
+---
+
+# v0.2 - Gym Mode
 
 **Status:** In planning
 

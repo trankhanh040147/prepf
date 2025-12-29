@@ -13,15 +13,15 @@ const (
 	EnvVarTimeout = "PREPF_TIMEOUT"
 
 	// Config key names (used in Viper and YAML)
-	KeyAPIKey    = "api_key"
-	KeyTimeout   = "timeout"
-	KeyEditor    = "editor"
+	KeyAPIKey     = "api_key"
+	KeyTimeout    = "timeout"
+	KeyEditor     = "editor"
 	KeyTokenLimit = "token_limit"
 
 	// Read-only config keys (display-only, not settable)
-	KeyNoColor    = "no_color"
-	KeyIsTTY      = "is_tty"
-	KeyConfigDir  = "config_dir"
+	KeyNoColor     = "no_color"
+	KeyIsTTY       = "is_tty"
+	KeyConfigDir   = "config_dir"
 	KeyProfilePath = "profile_path"
 
 	// ConfigDirName is the config directory name
@@ -29,7 +29,7 @@ const (
 	// ConfigFileName is the config file name
 	ConfigFileName = "config.yaml"
 	// ProfileFileName is the profile file name
-	ProfileFileName = "profile.json"
+	ProfileFileName = "profile.md"
 
 	// DefaultTimeout is the default network timeout in seconds
 	DefaultTimeout = 30
@@ -46,6 +46,17 @@ const (
 	DefaultEditorWindows = "notepad"
 	// DefaultMinWidth is the minimum terminal width
 	DefaultMinWidth = 80
+
+	// UI padding constants for consistent spacing
+	// ViewportContentPadding is horizontal padding for viewport content (left/right)
+	ViewportContentPadding = 2
+	// ViewportTopPadding is vertical padding at the top of viewport content
+	ViewportTopPadding = 1
+	// InputBoxPadding is horizontal padding for input boxes (left/right)
+	InputBoxPadding = 2
+	// StatusBarPadding is horizontal padding for status bars (left/right)
+	StatusBarPadding = 2
+
 	// ConfigFileHeader is the header comment for config files
 	ConfigFileHeader = `# prepf configuration
 # Example:

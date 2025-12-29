@@ -20,7 +20,9 @@ go.work
 
 # IDE
 .idea/
-.vscode/
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
 *.swp
 *.swo
 *~
@@ -37,4 +39,5 @@ build/
 # ~/.config/prepf/config.yaml
 
 # Profile (user-specific)
-# ~/.config/prepf/profile.json
+# ~/.config/prepf/profile.md
+# hello

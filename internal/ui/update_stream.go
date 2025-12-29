@@ -37,25 +37,21 @@ func (m *Model) handleStreamError(msg StreamErrorMsg) (*Model, tea.Cmd) {
 	return m, nil
 }
 
-// waitForStreamChunk creates a command to wait for the next chunk
+// waitForStreamChunk creates a command to wait for the next stream message
 func (m *Model) waitForStreamChunk() tea.Cmd {
 	return func() tea.Msg {
-		select {
-		case chunk, ok := <-m.streamChunkChan:
-			if !ok {
-				return nil
-			}
-			return StreamChunkMsg{Text: chunk}
-		case err, ok := <-m.streamErrChan:
-			if !ok {
-				return nil
-			}
-			return StreamErrorMsg{Err: err}
-		case fullResponse, ok := <-m.streamDoneChan:
-			if !ok {
-				return nil
-			}
-			return StreamDoneMsg{FullResponse: fullResponse}
+		msg, ok := <-m.streamMsgChan
+		if !ok {
+			return nil
 		}
+		switch msg.Type {
+		case StreamMsgChunk:
+			return StreamChunkMsg{Text: msg.Chunk}
+		case StreamMsgDone:
+			return StreamDoneMsg{FullResponse: msg.FullResponse}
+		case StreamMsgError:
+			return StreamErrorMsg{Err: msg.Err}
+		}
+		return nil
 	}
 }

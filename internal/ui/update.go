@@ -77,6 +77,15 @@ func (m *Model) updateNonKeyMsg(msg tea.Msg) (*Model, tea.Cmd) {
 	case StreamErrorMsg:
 		return m.handleStreamError(msg)
 
+	case YankMsg:
+		switch msg.Type {
+		case YankTypeContent:
+			m.yankFeedback = "Copied content to clipboard"
+		case YankTypeLastResponse:
+			m.yankFeedback = "Copied last response to clipboard"
+		}
+		cmds = append(cmds, ClearYankFeedbackCmd(YankFeedbackDuration))
+
 	case YankFeedbackMsg:
 		m.yankFeedback = ""
 	}

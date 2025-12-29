@@ -68,12 +68,10 @@ func (c *Client) SendMessageStream(ctx context.Context, message string, callback
 		return nil
 	})
 
-	// Wait for goroutine completion in background
-	go func() {
-		if err := g.Wait(); err != nil {
-			log.Printf("Warning: errgroup returned error: %v", err)
-		}
-	}()
+	// Note: g.Wait() is not called here because the producer goroutine closes
+	// the channel via defer close(ch), which naturally terminates the consumer
+	// loop below. Errors from the iterator are passed through the channel.
+	_ = g // Silence unused variable warning; errgroup manages producer lifecycle
 
 	for {
 		select {

@@ -104,7 +104,40 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 ### CI/CD 
 - [x] GitHub Actions workflow with testing, linting, vulnerability scanning, and multi-platform builds
 
-# v0.1.1 - Mock Module (The Gauntlet)
+# v0.1.1 - Bug Fixes & Architecture Improvements
+
+**Status:** ✅ Complete
+
+**Goal:** Fix critical bugs and improve TUI architecture.
+
+## Bug Fixes
+
+- **[Critical] Context Cancellation:** Fixed no-op cancel function in `update_chatting.go`. Changed `ctx, cancel := m.rootCtx, func() {}` to `ctx, cancel := context.WithCancel(m.rootCtx)`.
+- **[Warning] errgroup Pattern:** Removed detached goroutine waiting on `errgroup.Wait()` that could hide errors in `client_chat.go`.
+
+## Architecture Improvements
+
+- **Stream Channel Consolidation:** Replaced three separate channels (`streamChunkChan`, `streamErrChan`, `streamDoneChan`) with single unified `streamMsgChan chan StreamMsg`. Eliminates race conditions from multi-channel `select`.
+- **Clipboard Implementation:** Implemented real clipboard functionality in `internal/ui/yank.go` using `github.com/atotto/clipboard`. Supports `yy` (full content) and `Y` (last response).
+- **Dead Code Removal:** Removed unused `streamChunkCmd`, `streamDoneCmd`, `streamErrorCmd` functions.
+
+## Files Modified
+
+| File | Change |
+|------|--------|
+| `internal/ui/update_chatting.go` | Fixed context.WithCancel, single channel |
+| `internal/ui/update_stream.go` | Simplified to single channel select |
+| `internal/ui/model.go` | Replaced 3 channels with 1 |
+| `internal/ui/messages.go` | Added StreamMsg type, removed dead code |
+| `internal/ui/yank.go` | **New** - clipboard implementation |
+| `internal/ui/update_normal.go` | Use new yank commands |
+| `internal/ui/update.go` | Handle YankMsg feedback |
+| `internal/gemini/client_chat.go` | Removed detached errgroup wait |
+| `.cursor/rules/rules.mdc` | Added context cancellation anti-pattern |
+
+---
+
+# v0.1.2 - Mock Module (The Gauntlet)
 
 **Status:** Ideas, not planned yet.
 // TODO: Help me plan details for this phase

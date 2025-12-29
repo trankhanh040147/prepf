@@ -37,17 +37,15 @@ func (m *Model) updateKeyMsgNormal(msg tea.KeyMsg) (*Model, tea.Cmd) {
 	case key.Matches(msg, m.keys.Yank):
 		if m.lastKeyWasY {
 			// Double y - yank full content
-			m.yankFeedback = m.yankContent(YankTypeContent)
 			m.lastKeyWasY = false
-			return m, ClearYankFeedbackCmd(YankFeedbackDuration)
+			return m, YankContent(m.rawContent, m.chatHistory)
 		}
 		m.lastKeyWasY = true
 		return m, nil
 
 	// Yank last response
 	case key.Matches(msg, m.keys.YankLast):
-		m.yankFeedback = m.yankContent(YankTypeLastResponse)
-		return m, ClearYankFeedbackCmd(YankFeedbackDuration)
+		return m, YankLastResponse(m.rawContent, m.chatHistory)
 
 	// Navigation - let viewport handle it
 	default:
@@ -55,18 +53,5 @@ func (m *Model) updateKeyMsgNormal(msg tea.KeyMsg) (*Model, tea.Cmd) {
 		var cmd tea.Cmd
 		m.viewport, cmd = m.viewport.Update(msg)
 		return m, cmd
-	}
-}
-
-// yankContent yanks content to clipboard
-func (m *Model) yankContent(yankType YankType) string {
-	// TODO: Implement clipboard functionality
-	switch yankType {
-	case YankTypeContent:
-		return "Copied content to clipboard"
-	case YankTypeLastResponse:
-		return "Copied last response to clipboard"
-	default:
-		return "Copied to clipboard"
 	}
 }

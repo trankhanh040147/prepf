@@ -49,10 +49,8 @@ type Model struct {
 	streaming bool
 	noColor   bool
 
-	// Streaming channels
-	streamChunkChan chan string
-	streamErrChan   chan error
-	streamDoneChan  chan string
+	// Streaming channel (unified)
+	streamMsgChan chan StreamMsg
 
 	// Yank state
 	yankFeedback string
@@ -128,12 +126,10 @@ func Run(cfg *config.Config, client *gemini.Client) error {
 	return nil
 }
 
-// resetStreamState resets streaming state and clears all stream channels
+// resetStreamState resets streaming state and clears stream channel
 func (m *Model) resetStreamState() {
 	m.streaming = false
-	m.streamChunkChan = nil
-	m.streamErrChan = nil
-	m.streamDoneChan = nil
+	m.streamMsgChan = nil
 }
 
 // returnToPreviousState returns to the previous state

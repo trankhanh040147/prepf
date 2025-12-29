@@ -8,6 +8,23 @@ import (
 
 // Stream messages for AI interactions
 
+// StreamMsgType represents the type of stream message
+type StreamMsgType int
+
+const (
+	StreamMsgChunk StreamMsgType = iota
+	StreamMsgDone
+	StreamMsgError
+)
+
+// StreamMsg is a unified message type for streaming
+type StreamMsg struct {
+	Type         StreamMsgType
+	Chunk        string
+	FullResponse string
+	Err          error
+}
+
 // StreamStartMsg signals that streaming has started
 type StreamStartMsg struct{}
 
@@ -24,39 +41,6 @@ type StreamDoneMsg struct {
 // StreamErrorMsg contains an error from streaming
 type StreamErrorMsg struct {
 	Err error
-}
-
-// streamChunkCmd creates a command to listen for chunks from a channel
-func streamChunkCmd(chunkChan chan string) tea.Cmd {
-	return func() tea.Msg {
-		chunk, ok := <-chunkChan
-		if !ok {
-			return nil
-		}
-		return StreamChunkMsg{Text: chunk}
-	}
-}
-
-// streamDoneCmd creates a command to listen for completion from a channel
-func streamDoneCmd(doneChan chan string) tea.Cmd {
-	return func() tea.Msg {
-		fullResponse, ok := <-doneChan
-		if !ok {
-			return nil
-		}
-		return StreamDoneMsg{FullResponse: fullResponse}
-	}
-}
-
-// streamErrorCmd creates a command to listen for errors from a channel
-func streamErrorCmd(errChan chan error) tea.Cmd {
-	return func() tea.Msg {
-		err, ok := <-errChan
-		if !ok {
-			return nil
-		}
-		return StreamErrorMsg{Err: err}
-	}
 }
 
 // Chat messages

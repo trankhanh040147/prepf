@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"context"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -49,28 +51,26 @@ func (m *Model) updateKeyMsgChatting(msg tea.KeyMsg) (*Model, tea.Cmd) {
 // startStreamingChat initiates a streaming chat request
 func (m *Model) startStreamingChat(message string) tea.Cmd {
 	return func() tea.Msg {
-		// Create channels for streaming
-		m.streamChunkChan = make(chan string, 10)
-		m.streamErrChan = make(chan error, 1)
-		m.streamDoneChan = make(chan string, 1)
+		// Create unified streaming channel
+		m.streamMsgChan = make(chan StreamMsg, 10)
 
 		// Start streaming in background
 		go func() {
-			ctx, cancel := m.rootCtx, func() {}
+			ctx, cancel := context.WithCancel(m.rootCtx)
 			if m.activeCancel != nil {
 				m.activeCancel()
 			}
 			m.activeCancel = cancel
 
 			fullResponse, err := m.client.SendMessageStream(ctx, message, func(chunk string) {
-				m.streamChunkChan <- chunk
+				m.streamMsgChan <- StreamMsg{Type: StreamMsgChunk, Chunk: chunk}
 			})
 
 			if err != nil {
-				m.streamErrChan <- err
+				m.streamMsgChan <- StreamMsg{Type: StreamMsgError, Err: err}
 				return
 			}
-			m.streamDoneChan <- fullResponse
+			m.streamMsgChan <- StreamMsg{Type: StreamMsgDone, FullResponse: fullResponse}
 		}()
 
 		return StreamStartMsg{}

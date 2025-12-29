@@ -38,3 +38,5 @@ build/
 
 # Profile (user-specific)
 # ~/.config/prepf/profile.json
+
+revcli/

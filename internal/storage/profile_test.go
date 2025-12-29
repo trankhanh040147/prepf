@@ -92,4 +92,3 @@ func TestStore_SaveCreatesDirectory(t *testing.T) {
 		t.Fatal("profile file was not created")
 	}
 }
-

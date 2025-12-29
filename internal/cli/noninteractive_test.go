@@ -12,10 +12,10 @@ import (
 func TestConfigCommand_NonInteractive(t *testing.T) {
 	// Test config command in non-interactive mode
 	// This simulates running: prepf config api_key test-key
-	
+
 	// Create a buffer to capture output
 	var buf bytes.Buffer
-	
+
 	// Create a test command
 	testCmd := &cobra.Command{
 		Use: "test",
@@ -29,12 +29,12 @@ func TestConfigCommand_NonInteractive(t *testing.T) {
 			return nil
 		},
 	}
-	
+
 	// Execute command
 	if err := testCmd.Execute(); err != nil {
 		t.Fatalf("Execute() error = %v", err)
 	}
-	
+
 	// Verify output was captured
 	if buf.Len() == 0 {
 		t.Error("expected command to produce output")
@@ -45,11 +45,11 @@ func TestVersionCommand_NonInteractive(t *testing.T) {
 	// Test version command produces output
 	var buf bytes.Buffer
 	versionCmd.SetOut(&buf)
-	
+
 	if err := versionCmd.RunE(versionCmd, []string{}); err != nil {
 		t.Fatalf("RunE() error = %v", err)
 	}
-	
+
 	if buf.Len() == 0 {
 		t.Error("expected version command to produce output")
 	}
@@ -64,7 +64,7 @@ func TestErrorPropagation(t *testing.T) {
 			return os.ErrNotExist
 		},
 	}
-	
+
 	err := errCmd.Execute()
 	if err == nil {
 		t.Error("expected command to return error")
@@ -95,4 +95,3 @@ func TestProfilePathOverride(t *testing.T) {
 	// Integration tests will verify flag parsing works correctly
 	_ = rootCmd.PersistentPreRunE
 }
-

@@ -13,15 +13,15 @@ const (
 	EnvVarTimeout = "PREPF_TIMEOUT"
 
 	// Config key names (used in Viper and YAML)
-	KeyAPIKey    = "api_key"
-	KeyTimeout   = "timeout"
-	KeyEditor    = "editor"
+	KeyAPIKey     = "api_key"
+	KeyTimeout    = "timeout"
+	KeyEditor     = "editor"
 	KeyTokenLimit = "token_limit"
 
 	// Read-only config keys (display-only, not settable)
-	KeyNoColor    = "no_color"
-	KeyIsTTY      = "is_tty"
-	KeyConfigDir  = "config_dir"
+	KeyNoColor     = "no_color"
+	KeyIsTTY       = "is_tty"
+	KeyConfigDir   = "config_dir"
 	KeyProfilePath = "profile_path"
 
 	// ConfigDirName is the config directory name

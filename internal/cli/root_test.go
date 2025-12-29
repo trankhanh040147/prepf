@@ -52,5 +52,3 @@ func TestRootCommand_ContextInjection(t *testing.T) {
 	// Context helpers (GetConfig, GetFlags) are tested via integration tests
 	// with actual command execution
 }
-
-

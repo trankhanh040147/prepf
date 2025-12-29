@@ -84,4 +84,3 @@ func (s *SpinnerModel) TickCmd() tea.Cmd {
 func (s *SpinnerModel) SetStyle(style lipgloss.Style) {
 	s.spinner.Style = style
 }
-

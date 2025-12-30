@@ -129,6 +129,83 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 - **Clipboard Implementation:** Added clipboard support (`yy`/`Y`) using `atotto/clipboard`
 - **Dead Code Removal:** Removed unused stream command functions
 
+## Refactor codebase 
+
+**Status:** ✅ In Progress - Phase 1 Complete
+
+### What We've Done
+
+**Phase 1: Clone Crush Internal Packages** ✅ Complete
+
+- **Cloned Utility Packages:** Successfully cloned and integrated reusable utility packages from `crush/internal/`:
+  - `ansiext/` - ANSI escape utilities
+  - `csync/` - Thread-safe concurrent slices and maps
+  - `diff/` - Diff generation utilities
+  - `env/` - Environment variable abstraction
+  - `filepathext/` - Filepath extensions (`SmartJoin`, `SmartIsAbs`)
+  - `fsext/` - File system utilities (fileutil, ignore, lookup, ls, expand, owner)
+  - `format/` - Formatting utilities (spinner wrapper)
+  - `home/` - Home directory utilities
+  - `stringext/` - String extensions
+  - `log/` - Logging setup (JSON handler, rotation, panic recovery)
+  - `version/` - Version management utilities
+
+- **Cloned TUI Components:** Cloned reusable TUI components from `crush/internal/tui/`:
+  - `components/core/` - Core layout/status components
+  - `components/anim/` - Animation utilities
+  - `components/completions/` - Completions UI
+  - `exp/diffview/` - Diff view component
+  - `exp/list/` - List components
+  - `highlight/` - Syntax highlighting
+  - `styles/` - Styling utilities
+  - `util/` - TUI utilities
+  - Excluded crush-specific: `chat/`, `dialogs/`, `lsp/`, `mcp/`, `page/`
+
+- **Import Adaptation:** Updated all imports from `github.com/charmbracelet/crush` to `github.com/trankhanh040147/prepf`
+- **Dependency Management:** Added missing dependencies (`mvdan.cc/sh/v3`, `gopkg.in/natefinch/lumberjack.v2`, `github.com/zeebo/xxh3`)
+- **Stub Packages:** Created compatibility stubs for missing dependencies:
+  - `internal/uiutil/` - UI utility functions for TUI components
+  - `internal/history/` - File history stub for file components
+- **Build Status:** Main prepf command (`./cmd/prepf`) builds successfully ✅
+
+### What We Need To Do Next
+
+**Phase 2: Integration & Compatibility** 🔄 Next Steps
+
+- [ ] **Fix TUI Component Compatibility:** Some cloned TUI components have API version mismatches:
+  - `internal/tui/components/anim/` - Color API incompatibility with older lipgloss version
+  - `internal/tui/styles/` - References `charm.land/glamour/v2` which doesn't exist
+  - `internal/tui/tui.go` - References crush-specific packages (`app`, `event`, `permission`, `pubsub`, `agent/tools/mcp`)
+  - **Action:** Either update prepf's bubbletea/lipgloss versions OR adapt components to work with current versions
+
+- [ ] **Integrate Utility Packages:** Start using cloned utilities in prepf codebase:
+  - Replace manual string operations with `stringext/` functions
+  - Use `fsext/` for file operations instead of manual `filepath` usage
+  - Integrate `csync/` for concurrent data structures where needed
+  - Use `diff/` for any diff generation features
+  - Consider `log/` package for structured logging
+
+- [ ] **Merge String Utilities:** Merge `internal/util/stringutil/fuzzy.go` with `internal/stringext/` (prefer crush's naming)
+
+- [ ] **TUI Component Integration:** Evaluate which TUI components from crush are useful:
+  - `exp/list/` - Could replace custom list implementations
+  - `exp/diffview/` - Useful for showing code diffs in mock interviews
+  - `components/completions/` - Could enhance CLI autocomplete
+  - `components/core/status/` - Already used by `components/files/`
+
+- [ ] **Remove Unused Components:** Clean up components that won't be used:
+  - `internal/tui/tui.go` - Crush-specific app model (not needed, prepf has own UI)
+  - `internal/tui/components/files/` - Only used by crush's chat component
+  - Any other crush-specific dependencies
+
+- [ ] **Documentation:** Update codebase documentation to reflect new package structure
+
+**Phase 3: Code Quality** 📋 Future
+
+- [ ] **Adopt Library Patterns:** Replace custom implementations with crush's utilities where beneficial
+- [ ] **Consistency:** Ensure all code follows crush's patterns for utilities (DRY, functional helpers)
+- [ ] **Testing:** Add tests for integrated utility packages
+
 ## New Features 
 
 **Status:** In planning

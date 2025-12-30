@@ -18,4 +18,3 @@ const (
 	// FlagQuietShort is the short alias for quiet flag
 	FlagQuietShort = "q"
 )
-

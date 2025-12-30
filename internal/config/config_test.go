@@ -107,4 +107,3 @@ func TestNoColorDetection(t *testing.T) {
 	// But we can't easily test non-TTY case without mocking
 	_ = cfg2
 }
-

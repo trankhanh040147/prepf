@@ -12,7 +12,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"github.com/trankhanh040147/prepf/internal/config"
-	"github.com/trankhanh040147/prepf/internal/util/stringutil"
+	"github.com/trankhanh040147/prepf/internal/stringext"
 )
 
 var configCmd = &cobra.Command{
@@ -56,7 +56,7 @@ func newInvalidKeyError(providedKey string, validKeys []string, action string) e
 	msg := fmt.Sprintf("key '%s' cannot be %s", providedKey, action)
 
 	// Add fuzzy match suggestion if available
-	if closest := stringutil.FuzzyMatch(providedKey, validKeys); closest != "" {
+	if closest := stringext.FuzzyMatch(providedKey, validKeys); closest != "" {
 		msg += fmt.Sprintf(", did you mean '%s'?", closest)
 	}
 

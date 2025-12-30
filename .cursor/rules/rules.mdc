@@ -50,6 +50,7 @@ alwaysApply: true
 - **Safe Mutation:** Cache original IDs/Keys **before** editing; execute deletions against the cached values, never against modified properties.
 - **JSON:** Use `bytedance/sonic` for all marshalling. **Ban** `encoding/json`.
 - **Concurrency:** Use `errgroup.Group` (propagates errors) over `sync.WaitGroup`.
+- **Context Cancellation:** Always use `context.WithCancel(parentCtx)` to create cancellable contexts. **Never** use `ctx, cancel := parentCtx, func() {}` - this creates a no-op cancel function.
 - **Input Safety:** Single `bufio.NewReader`. **Ban** `fmt.Scanln`, `fmt.Sscanf`. Use `reader.ReadString` for input, `strconv` for parsing.
 - **Flow:** Use `Cobra.RunE`. Return errors to `main`. **No** `os.Exit` in library code. Listen for `os.Interrupt`.
 - **Constructors:** Return pointers (`func NewType(...) *Type`) for stateful types.

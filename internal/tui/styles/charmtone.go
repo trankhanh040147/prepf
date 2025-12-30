@@ -59,25 +59,25 @@ func NewCharmtoneTheme() *Theme {
 	}
 
 	// Text selection.
-	t.TextSelection = lipgloss.NewStyle().Foreground(charmtone.Salt).Background(charmtone.Charple)
+	t.TextSelection = lipgloss.NewStyle().Foreground(lipgloss.Color(charmtone.Salt.Hex())).Background(lipgloss.Color(charmtone.Charple.Hex()))
 
 	// LSP and MCP status.
-	t.ItemOfflineIcon = lipgloss.NewStyle().Foreground(charmtone.Squid).SetString("●")
-	t.ItemBusyIcon = t.ItemOfflineIcon.Foreground(charmtone.Citron)
-	t.ItemErrorIcon = t.ItemOfflineIcon.Foreground(charmtone.Coral)
-	t.ItemOnlineIcon = t.ItemOfflineIcon.Foreground(charmtone.Guac)
+	t.ItemOfflineIcon = lipgloss.NewStyle().Foreground(lipgloss.Color(charmtone.Squid.Hex())).SetString("●")
+	t.ItemBusyIcon = t.ItemOfflineIcon.Foreground(lipgloss.Color(charmtone.Citron.Hex()))
+	t.ItemErrorIcon = t.ItemOfflineIcon.Foreground(lipgloss.Color(charmtone.Coral.Hex()))
+	t.ItemOnlineIcon = t.ItemOfflineIcon.Foreground(lipgloss.Color(charmtone.Guac.Hex()))
 
 	// Editor: Yolo Mode.
-	t.YoloIconFocused = lipgloss.NewStyle().Foreground(charmtone.Oyster).Background(charmtone.Citron).Bold(true).SetString(" ! ")
-	t.YoloIconBlurred = t.YoloIconFocused.Foreground(charmtone.Pepper).Background(charmtone.Squid)
-	t.YoloDotsFocused = lipgloss.NewStyle().Foreground(charmtone.Zest).SetString(":::")
-	t.YoloDotsBlurred = t.YoloDotsFocused.Foreground(charmtone.Squid)
+	t.YoloIconFocused = lipgloss.NewStyle().Foreground(lipgloss.Color(charmtone.Oyster.Hex())).Background(lipgloss.Color(charmtone.Citron.Hex())).Bold(true).SetString(" ! ")
+	t.YoloIconBlurred = t.YoloIconFocused.Foreground(lipgloss.Color(charmtone.Pepper.Hex())).Background(lipgloss.Color(charmtone.Squid.Hex()))
+	t.YoloDotsFocused = lipgloss.NewStyle().Foreground(lipgloss.Color(charmtone.Zest.Hex())).SetString(":::")
+	t.YoloDotsBlurred = t.YoloDotsFocused.Foreground(lipgloss.Color(charmtone.Squid.Hex()))
 
 	// oAuth Chooser.
-	t.AuthBorderSelected = lipgloss.NewStyle().BorderForeground(charmtone.Guac)
-	t.AuthTextSelected = lipgloss.NewStyle().Foreground(charmtone.Julep)
-	t.AuthBorderUnselected = lipgloss.NewStyle().BorderForeground(charmtone.Iron)
-	t.AuthTextUnselected = lipgloss.NewStyle().Foreground(charmtone.Squid)
+	t.AuthBorderSelected = lipgloss.NewStyle().BorderForeground(lipgloss.Color(charmtone.Guac.Hex()))
+	t.AuthTextSelected = lipgloss.NewStyle().Foreground(lipgloss.Color(charmtone.Julep.Hex()))
+	t.AuthBorderUnselected = lipgloss.NewStyle().BorderForeground(lipgloss.Color(charmtone.Iron.Hex()))
+	t.AuthTextUnselected = lipgloss.NewStyle().Foreground(lipgloss.Color(charmtone.Squid.Hex()))
 
 	return t
 }

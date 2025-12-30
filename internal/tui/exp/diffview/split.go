@@ -4,7 +4,6 @@ import (
 	"slices"
 
 	"github.com/aymanbagabas/go-udiff"
-	"github.com/charmbracelet/x/exp/slice"
 )
 
 type splitHunk struct {
@@ -26,13 +25,9 @@ func hunkToSplit(h *udiff.Hunk) (sh splitHunk) {
 		lines:    make([]*splitLine, 0, len(lines)),
 	}
 
-	for {
+	for len(lines) > 0 {
 		var ul udiff.Line
-		var ok bool
-		ul, lines, ok = slice.Shift(lines)
-		if !ok {
-			break
-		}
+		ul, lines = lines[0], lines[1:]
 
 		var sl splitLine
 
@@ -56,9 +51,10 @@ func hunkToSplit(h *udiff.Hunk) (sh splitHunk) {
 			for i, l := range lines {
 				switch l.Kind {
 				case udiff.Insert:
-					var ll udiff.Line
-					ll, lines, _ = slice.DeleteAt(lines, i)
+					ll := lines[i]
 					sl.after = &ll
+					// Remove element at index i
+					lines = append(lines[:i], lines[i+1:]...)
 					break inner
 				case udiff.Equal:
 					break inner

@@ -195,7 +195,7 @@ func New(opts Settings) *Anim {
 				// Also prerender the initial character with Lip Gloss to avoid
 				// processing in the render loop.
 				a.initialFrames[i][j] = lipgloss.NewStyle().
-					Foreground(c).
+					Foreground(colorToHex(c)).
 					Render(string(initialChar))
 			}
 			if opts.CycleColors {
@@ -217,7 +217,7 @@ func New(opts Settings) *Anim {
 				// in the render loop.
 				r := availableRunes[rand.IntN(len(availableRunes))]
 				a.cyclingFrames[i][j] = lipgloss.NewStyle().
-					Foreground(ramp[j+offset]).
+					Foreground(colorToHex(ramp[j+offset])).
 					Render(string(r))
 			}
 			if opts.CycleColors {
@@ -274,9 +274,10 @@ func (a *Anim) renderLabel(label string) {
 		// Pre-render the label.
 		labelRunes := []rune(label)
 		a.label = csync.NewSlice[string]()
+		labelHex := colorToHex(a.labelColor)
 		for i := range labelRunes {
 			rendered := lipgloss.NewStyle().
-				Foreground(a.labelColor).
+				Foreground(labelHex).
 				Render(string(labelRunes[i]))
 			a.label.Append(rendered)
 		}
@@ -285,7 +286,7 @@ func (a *Anim) renderLabel(label string) {
 		a.ellipsisFrames = csync.NewSlice[string]()
 		for _, frame := range ellipsisFrames {
 			rendered := lipgloss.NewStyle().
-				Foreground(a.labelColor).
+				Foreground(labelHex).
 				Render(frame)
 			a.ellipsisFrames.Append(rendered)
 		}
@@ -444,4 +445,19 @@ func colorIsUnset(c color.Color) bool {
 	}
 	_, _, _, a := c.RGBA()
 	return a == 0
+}
+
+// colorToHex converts a color.Color to a hex string for use with lipgloss
+func colorToHex(c color.Color) lipgloss.Color {
+	if c == nil {
+		return lipgloss.Color("#000000")
+	}
+	// Use colorful to convert to hex string
+	col, ok := colorful.MakeColor(c)
+	if !ok {
+		// Fallback: convert RGBA to hex manually
+		r, g, b, _ := c.RGBA()
+		return lipgloss.Color(fmt.Sprintf("#%02x%02x%02x", r>>8, g>>8, b>>8))
+	}
+	return lipgloss.Color(col.Hex())
 }

@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/trankhanh040147/prepf/internal/stringext"
 )
 
 // NewHTTPClient creates an HTTP client with debug logging enabled when debug mode is on.
@@ -101,10 +103,7 @@ func formatHeaders(headers http.Header) map[string][]string {
 	for key, values := range headers {
 		lowerKey := strings.ToLower(key)
 		// Filter out sensitive headers
-		if strings.Contains(lowerKey, "authorization") ||
-			strings.Contains(lowerKey, "api-key") ||
-			strings.Contains(lowerKey, "token") ||
-			strings.Contains(lowerKey, "secret") {
+		if stringext.ContainsAny(lowerKey, "authorization", "api-key", "token", "secret") {
 			filtered[key] = []string{"[REDACTED]"}
 		} else {
 			filtered[key] = values

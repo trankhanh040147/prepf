@@ -1,7 +1,7 @@
 package styles
 
 import (
-	"charm.land/glamour/v2/ansi"
+	"github.com/trankhanh040147/prepf/internal/tui/styles/ansi"
 	"github.com/alecthomas/chroma/v2"
 )
 

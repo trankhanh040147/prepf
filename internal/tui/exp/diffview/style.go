@@ -28,46 +28,46 @@ func DefaultLightStyle() Style {
 	return Style{
 		DividerLine: LineStyle{
 			LineNumber: lipgloss.NewStyle().
-				Foreground(charmtone.Iron).
-				Background(charmtone.Thunder),
+				Foreground(lipgloss.Color(charmtone.Iron.Hex())).
+				Background(lipgloss.Color(charmtone.Thunder.Hex())),
 			Code: lipgloss.NewStyle().
-				Foreground(charmtone.Oyster).
-				Background(charmtone.Anchovy),
+				Foreground(lipgloss.Color(charmtone.Oyster.Hex())).
+				Background(lipgloss.Color(charmtone.Anchovy.Hex())),
 		},
 		MissingLine: LineStyle{
 			LineNumber: lipgloss.NewStyle().
-				Background(charmtone.Ash),
+				Background(lipgloss.Color(charmtone.Ash.Hex())),
 			Code: lipgloss.NewStyle().
-				Background(charmtone.Ash),
+				Background(lipgloss.Color(charmtone.Ash.Hex())),
 		},
 		EqualLine: LineStyle{
 			LineNumber: lipgloss.NewStyle().
-				Foreground(charmtone.Charcoal).
-				Background(charmtone.Ash),
+				Foreground(lipgloss.Color(charmtone.Charcoal.Hex())).
+				Background(lipgloss.Color(charmtone.Ash.Hex())),
 			Code: lipgloss.NewStyle().
-				Foreground(charmtone.Pepper).
-				Background(charmtone.Salt),
+				Foreground(lipgloss.Color(charmtone.Pepper.Hex())).
+				Background(lipgloss.Color(charmtone.Salt.Hex())),
 		},
 		InsertLine: LineStyle{
 			LineNumber: lipgloss.NewStyle().
-				Foreground(charmtone.Turtle).
+				Foreground(lipgloss.Color(charmtone.Turtle.Hex())).
 				Background(lipgloss.Color("#c8e6c9")),
 			Symbol: lipgloss.NewStyle().
-				Foreground(charmtone.Turtle).
+				Foreground(lipgloss.Color(charmtone.Turtle.Hex())).
 				Background(lipgloss.Color("#e8f5e9")),
 			Code: lipgloss.NewStyle().
-				Foreground(charmtone.Pepper).
+				Foreground(lipgloss.Color(charmtone.Pepper.Hex())).
 				Background(lipgloss.Color("#e8f5e9")),
 		},
 		DeleteLine: LineStyle{
 			LineNumber: lipgloss.NewStyle().
-				Foreground(charmtone.Cherry).
+				Foreground(lipgloss.Color(charmtone.Cherry.Hex())).
 				Background(lipgloss.Color("#ffcdd2")),
 			Symbol: lipgloss.NewStyle().
-				Foreground(charmtone.Cherry).
+				Foreground(lipgloss.Color(charmtone.Cherry.Hex())).
 				Background(lipgloss.Color("#ffebee")),
 			Code: lipgloss.NewStyle().
-				Foreground(charmtone.Pepper).
+				Foreground(lipgloss.Color(charmtone.Pepper.Hex())).
 				Background(lipgloss.Color("#ffebee")),
 		},
 	}
@@ -78,46 +78,46 @@ func DefaultDarkStyle() Style {
 	return Style{
 		DividerLine: LineStyle{
 			LineNumber: lipgloss.NewStyle().
-				Foreground(charmtone.Smoke).
-				Background(charmtone.Sapphire),
+				Foreground(lipgloss.Color(charmtone.Smoke.Hex())).
+				Background(lipgloss.Color(charmtone.Sapphire.Hex())),
 			Code: lipgloss.NewStyle().
-				Foreground(charmtone.Smoke).
-				Background(charmtone.Ox),
+				Foreground(lipgloss.Color(charmtone.Smoke.Hex())).
+				Background(lipgloss.Color(charmtone.Ox.Hex())),
 		},
 		MissingLine: LineStyle{
 			LineNumber: lipgloss.NewStyle().
-				Background(charmtone.Charcoal),
+				Background(lipgloss.Color(charmtone.Charcoal.Hex())),
 			Code: lipgloss.NewStyle().
-				Background(charmtone.Charcoal),
+				Background(lipgloss.Color(charmtone.Charcoal.Hex())),
 		},
 		EqualLine: LineStyle{
 			LineNumber: lipgloss.NewStyle().
-				Foreground(charmtone.Ash).
-				Background(charmtone.Charcoal),
+				Foreground(lipgloss.Color(charmtone.Ash.Hex())).
+				Background(lipgloss.Color(charmtone.Charcoal.Hex())),
 			Code: lipgloss.NewStyle().
-				Foreground(charmtone.Salt).
-				Background(charmtone.Pepper),
+				Foreground(lipgloss.Color(charmtone.Salt.Hex())).
+				Background(lipgloss.Color(charmtone.Pepper.Hex())),
 		},
 		InsertLine: LineStyle{
 			LineNumber: lipgloss.NewStyle().
-				Foreground(charmtone.Turtle).
+				Foreground(lipgloss.Color(charmtone.Turtle.Hex())).
 				Background(lipgloss.Color("#293229")),
 			Symbol: lipgloss.NewStyle().
-				Foreground(charmtone.Turtle).
+				Foreground(lipgloss.Color(charmtone.Turtle.Hex())).
 				Background(lipgloss.Color("#303a30")),
 			Code: lipgloss.NewStyle().
-				Foreground(charmtone.Salt).
+				Foreground(lipgloss.Color(charmtone.Salt.Hex())).
 				Background(lipgloss.Color("#303a30")),
 		},
 		DeleteLine: LineStyle{
 			LineNumber: lipgloss.NewStyle().
-				Foreground(charmtone.Cherry).
+				Foreground(lipgloss.Color(charmtone.Cherry.Hex())).
 				Background(lipgloss.Color("#332929")),
 			Symbol: lipgloss.NewStyle().
-				Foreground(charmtone.Cherry).
+				Foreground(lipgloss.Color(charmtone.Cherry.Hex())).
 				Background(lipgloss.Color("#3a3030")),
 			Code: lipgloss.NewStyle().
-				Foreground(charmtone.Salt).
+				Foreground(lipgloss.Color(charmtone.Salt.Hex())).
 				Background(lipgloss.Color("#3a3030")),
 		},
 	}

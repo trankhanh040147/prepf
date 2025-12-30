@@ -10,7 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"charm.land/glamour/v2/ansi"
+	"github.com/trankhanh040147/prepf/internal/tui/styles/ansi"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/trankhanh040147/prepf/internal/tui/exp/diffview"
 	"github.com/charmbracelet/x/exp/charmtone"

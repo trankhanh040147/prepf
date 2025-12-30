@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"image/color"
 
-	"charm.land/glamour/v2"
-	"charm.land/glamour/v2/ansi"
+	"github.com/charmbracelet/glamour"
+	"github.com/trankhanh040147/prepf/internal/tui/styles/ansi"
 )
 
 // lipglossColorToHex converts a color.Color to hex string

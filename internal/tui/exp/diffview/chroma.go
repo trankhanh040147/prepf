@@ -19,6 +19,12 @@ type chromaFormatter struct {
 	bgColor color.Color
 }
 
+// colorToHex converts a color.Color to hex string
+func colorToHex(c color.Color) string {
+	r, g, b, _ := c.RGBA()
+	return fmt.Sprintf("#%02x%02x%02x", r>>8, g>>8, b>>8)
+}
+
 // Format implements the chroma.Formatter interface.
 func (c chromaFormatter) Format(w io.Writer, style *chroma.Style, it chroma.Iterator) error {
 	for token := it(); token != chroma.EOF; token = it() {
@@ -34,7 +40,7 @@ func (c chromaFormatter) Format(w io.Writer, style *chroma.Style, it chroma.Iter
 		}
 
 		s := lipgloss.NewStyle().
-			Background(c.bgColor)
+			Background(lipgloss.Color(colorToHex(c.bgColor)))
 
 		if entry.Bold == chroma.Yes {
 			s = s.Bold(true)

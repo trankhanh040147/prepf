@@ -112,23 +112,22 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 ## Code Quality Fixes
 **Status:** ✅ Complete
 
-- **Viewport Padding:** Fixed manual padding anti-pattern in `internal/ui/viewport.go`. Applied padding to content in `SetContent()` using `lipgloss.Style.Padding()` (not in `View()` as that breaks viewport scrolling). Removed manual string manipulation with for loops.
-- **Markdown Rendering:** Added markdown rendering support using `glamour` library. All viewport content is now rendered as markdown, properly styling elements like `*italic*` and `**bold**`.
-- **Slice Mutation Bug:** Fixed critical bug in `buildConfigForm` where slices were passed by value instead of pointers, causing user topic selections to be lost. Changed function signature to accept `*[]string` pointers and updated call site. Form now mutates model slices directly via pointers.
-- **Enter/Tab Navigation:** Fixed key handling in configuration form - moved state-specific key handling before global keys to ensure form receives Enter/Tab keys for navigation and selection. Enter/Space now toggle multi-select items, Tab moves between fields correctly.
-- **Redundant Data Flow:** Simplified `ConfigSubmittedMsg` to empty struct since form updates model slices directly via pointers. Removed unnecessary slice copying in `handleConfigSubmitted`.
-- **Keybinding Issues (v0.1.1 Final):**
-  - **Global Quit Keys:** Fixed Ctrl+C and Esc handling across all states. Ctrl+C now works consistently to quit. Esc blurs input when focused, otherwise acts as back/cancel.
-  - **Input State Escape:** Added explicit Esc handling in `InterviewUserInput` state to blur textinput before checking quit keys. Prevents input from consuming escape keys.
-  - **Form Navigation Clarity:** Updated form field descriptions to clarify that Space toggles selection, Tab navigates fields, Enter submits on last field.
-  - **Roast Display:** Fixed micro-roast disappearing immediately after surrender. Added `showSurrenderFeedback` flag to persist display until next question starts streaming.
-  - **Final Roast Generation:** Implemented actual AI-generated roast feedback instead of placeholder text. Roast now streams from AI with grade-based assessment.
-  - **State-Specific Key Handling:** Established clear precedence: (1) state-specific intercepts, (2) component updates, (3) global fallbacks. Prevents components from blocking critical quit keys.
-- **[Critical] Context Cancellation:** Fixed no-op cancel function in `update_chatting.go`. Changed `ctx, cancel := m.rootCtx, func() {}` to `ctx, cancel := context.WithCancel(m.rootCtx)`.
-- **[Warning] errgroup Pattern:** Removed detached goroutine waiting on `errgroup.Wait()` that could hide errors in `client_chat.go`.
-- **Stream Channel Consolidation:** Replaced three separate channels (`streamChunkChan`, `streamErrChan`, `streamDoneChan`) with single unified `streamMsgChan chan StreamMsg`. Eliminates race conditions from multi-channel `select`.
-- **Clipboard Implementation:** Implemented real clipboard functionality in `internal/ui/yank.go` using `github.com/atotto/clipboard`. Supports `yy` (full content) and `Y` (last response).
-- **Dead Code Removal:** Removed unused `streamChunkCmd`, `streamDoneCmd`, `streamErrorCmd` functions.
+- **Viewport Padding:** Fixed manual padding anti-pattern, use `lipgloss.Style.Padding()`
+- **Markdown Rendering:** Added markdown rendering with `glamour`
+- **Slice Mutation Bug:** Fixed slice mutation bug: pass `*[]string` pointers to form
+- **Enter/Tab Navigation:** Fixed form key handling: state-specific keys before global keys
+- **Redundant Data Flow:** Simplified `ConfigSubmittedMsg` to empty struct
+- **Global Quit Keys:** Fixed Ctrl+C/Esc handling across all states
+- **Input State Escape:** Added explicit Esc handling to blur textinput before quit checks
+- **Form Navigation Clarity:** Updated form descriptions for Space/Tab/Enter behavior
+- **Roast Display:** Fixed micro-roast disappearing, added `showSurrenderFeedback` flag
+- **Final Roast Generation:** Implemented AI-generated roast feedback with grade-based assessment
+- **State-Specific Key Handling:** Established precedence: state intercepts → component updates → global fallbacks
+- **Context Cancellation:** Fixed no-op cancel function: use `context.WithCancel()`
+- **errgroup Pattern:** Removed detached goroutine pattern that could hide errors
+- **Stream Channel Consolidation:** Replaced three channels with single `streamMsgChan`
+- **Clipboard Implementation:** Added clipboard support (`yy`/`Y`) using `atotto/clipboard`
+- **Dead Code Removal:** Removed unused stream command functions
 
 ## New Features 
 

@@ -1,5 +1,6 @@
 # Crush to Prepf Migration Checklist
 
+**Crush codebase**: Folder `crush` in the root of the project.
 This document tracks the migration from `charmbracelet/crush` architecture to `prepf` (Technical Interview Coach CLI).
 
 ## Overview
@@ -20,20 +21,20 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Copy Pure UI/Config Packages
 
-- [ ] Copy `crush-ref/internal/tui/styles/` → `internal/ui/styles/`
+- [ ] Copy `crush/internal/tui/styles/` → `internal/ui/styles/`
   - [ ] `theme.go` - Core theme definitions
   - [ ] `charmtone.go` - Default theme
   - [ ] `chroma.go` - Syntax highlighting
   - [ ] `icons.go` - Icon definitions
   - [ ] `markdown.go` - Markdown rendering
 
-- [ ] Copy `crush-ref/internal/tui/components/core/` → `internal/ui/components/core/`
+- [ ] Copy `crush/internal/tui/components/core/` → `internal/ui/components/core/`
   - [ ] `core.go`
   - [ ] `layout/layout.go`
   - [ ] `status/status.go`
   - [ ] Test files
 
-- [ ] Copy `crush-ref/internal/tui/components/dialogs/` → `internal/ui/components/dialogs/`
+- [ ] Copy `crush/internal/tui/components/dialogs/` → `internal/ui/components/dialogs/`
   - [ ] `dialogs.go`
   - [ ] `models/` (model selection dialogs)
   - [ ] `permissions/` (simplified for interviews)
@@ -42,18 +43,18 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
   - [ ] Remove: `copilot/`, `hyper/` (service-specific OAuth)
   - [ ] Remove: `sessions/` (will adapt to interviews later)
 
-- [ ] Copy `crush-ref/internal/tui/components/completions/` → `internal/ui/components/completions/`
+- [ ] Copy `crush/internal/tui/components/completions/` → `internal/ui/components/completions/`
   - [ ] `completions.go`
   - [ ] `keys.go`
 
-- [ ] Copy `crush-ref/internal/tui/components/anim/` → `internal/ui/components/anim/`
+- [ ] Copy `crush/internal/tui/components/anim/` → `internal/ui/components/anim/`
   - [ ] `anim.go`
 
-- [ ] Copy `crush-ref/internal/tui/util/` → `internal/ui/util/`
+- [ ] Copy `crush/internal/tui/util/` → `internal/ui/util/`
   - [ ] `util.go`
   - [ ] `shell.go`
 
-- [ ] Copy `crush-ref/internal/tui/keys.go` → `internal/ui/keys.go`
+- [ ] Copy `crush/internal/tui/keys.go` → `internal/ui/keys.go`
 
 - [ ] Copy utility packages:
   - [ ] `csync/` → `internal/csync/`
@@ -64,7 +65,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
   - [ ] `filepathext/` → `internal/filepathext/`
   - [ ] `ansiext/` → `internal/ansiext/`
 
-- [ ] Copy `crush-ref/internal/config/` structure → `internal/config/` (skeleton)
+- [ ] Copy `crush/internal/config/` structure → `internal/config/` (skeleton)
   - [ ] Copy `load.go`, `merge.go`, `resolve.go`, `provider.go` (structure)
   - [ ] Copy `config.go` (as template for adaptation)
   - [ ] Copy test files for reference
@@ -81,7 +82,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Database Schema Migration
 
-- [ ] Create `internal/db/sql/interviews.sql` (copy from `crush-ref/internal/db/sql/sessions.sql`)
+- [ ] Create `internal/db/sql/interviews.sql` (copy from `crush/internal/db/sql/sessions.sql`)
   - [ ] Rename table: `sessions` → `interviews`
   - [ ] Remove `parent_session_id` column (interviews are standalone)
   - [ ] Add interview-specific fields (if needed):
@@ -109,7 +110,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Session → Interview Service
 
-- [ ] Copy `crush-ref/internal/session/session.go` → `internal/interview/interview.go`
+- [ ] Copy `crush/internal/session/session.go` → `internal/interview/interview.go`
 - [ ] Rename package: `session` → `interview`
 - [ ] Rename `Session` struct → `Interview`
 - [ ] Rename `Service` interface → `InterviewService` (or keep `Service` in interview package)
@@ -135,7 +136,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 - [ ] Create `internal/coach/` directory
 
-- [ ] Copy `crush-ref/internal/agent/coordinator.go` → `internal/coach/coordinator.go`
+- [ ] Copy `crush/internal/agent/coordinator.go` → `internal/coach/coordinator.go`
   - [ ] Rename package: `agent` → `coach`
   - [ ] Rename `Coordinator` interface → `CoachCoordinator`
   - [ ] Rename `coordinator` struct → `coachCoordinator`
@@ -143,7 +144,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
   - [ ] Remove `hyper` provider references (lines referencing `hyper.Name`)
   - [ ] Keep standard providers: OpenAI, Anthropic, Google, Azure, Bedrock, OpenRouter
 
-- [ ] Copy `crush-ref/internal/agent/agent.go` → `internal/coach/coach.go`
+- [ ] Copy `crush/internal/agent/agent.go` → `internal/coach/coach.go`
   - [ ] Rename `SessionAgent` interface → `InterviewCoach`
   - [ ] Rename `sessionAgent` struct → `interviewCoach`
   - [ ] Update `SessionAgentOptions` → `InterviewCoachOptions`
@@ -151,10 +152,10 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
   - [ ] Change references: `sessions.Service` → `interviews.Service`
   - [ ] Update prompt loading logic
 
-- [ ] Copy `crush-ref/internal/agent/errors.go` → `internal/coach/errors.go`
+- [ ] Copy `crush/internal/agent/errors.go` → `internal/coach/errors.go`
   - [ ] Update package name
 
-- [ ] Copy `crush-ref/internal/agent/event.go` → `internal/coach/event.go` (if exists)
+- [ ] Copy `crush/internal/agent/event.go` → `internal/coach/event.go` (if exists)
   - [ ] Update package name
 
 ### Templates Rewrite
@@ -166,7 +167,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
   - [ ] Add interview-specific context: difficulty, topic, time limit
   - [ ] Define coach role: asking questions, providing hints, evaluating solutions
 
-- [ ] Create `internal/coach/templates/interview_title.md.tpl` (copy from `crush-ref/internal/agent/templates/title.md`)
+- [ ] Create `internal/coach/templates/interview_title.md.tpl` (copy from `crush/internal/agent/templates/title.md`)
   - [ ] Adapt for interview title generation (e.g., "Two Sum Problem - Easy")
 
 - [ ] Create `internal/coach/templates/summary.md` (copy from crush, adapt if needed)
@@ -178,7 +179,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
   - [ ] `initialize.md.tpl` (not needed)
   - [ ] `agentic_fetch_*.tpl` (not needed)
 
-- [ ] Copy `crush-ref/internal/agent/prompts.go` → `internal/coach/prompts.go`
+- [ ] Copy `crush/internal/agent/prompts.go` → `internal/coach/prompts.go`
   - [ ] Update package name
   - [ ] Update prompt loading to use new templates
   - [ ] Update system prompt generation for interview context
@@ -189,7 +190,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Chat → Interview UI
 
-- [ ] Copy `crush-ref/internal/tui/page/chat/` → `internal/ui/page/interview/`
+- [ ] Copy `crush/internal/tui/page/chat/` → `internal/ui/page/interview/`
 
 - [ ] Rename `chat.go` → `interview.go`
   - [ ] Rename package: `chat` → `interview`
@@ -234,7 +235,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Component Updates
 
-- [ ] Update `internal/ui/tui.go` (copy from `crush-ref/internal/tui/tui.go`)
+- [ ] Update `internal/ui/tui.go` (copy from `crush/internal/tui/tui.go`)
   - [ ] Update package name
   - [ ] Replace chat page with interview page
   - [ ] Update all references: `chat.ChatPageID` → `interview.InterviewPageID`
@@ -308,7 +309,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Selective Tool Removal
 
-- [ ] Copy `crush-ref/internal/agent/tools/` → `internal/coach/tools/` (selective)
+- [ ] Copy `crush/internal/agent/tools/` → `internal/coach/tools/` (selective)
 
 - [ ] **KEEP** (copy these):
   - [ ] `bash.go` - Code execution for interviews
@@ -353,7 +354,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Permission Simplification
 
-- [ ] Copy `crush-ref/internal/permission/` → `internal/permission/`
+- [ ] Copy `crush/internal/permission/` → `internal/permission/`
 - [ ] Update `internal/permission/permission.go`
   - [ ] Simplify permission system (interviews are less risky)
   - [ ] Remove complex permission dialogs (keep basic tool permissions)
@@ -361,7 +362,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Shell Package
 
-- [ ] Copy `crush-ref/internal/shell/` → `internal/shell/`
+- [ ] Copy `crush/internal/shell/` → `internal/shell/`
   - [ ] Keep as-is (needed for code execution)
   - [ ] Update package imports if needed
 
@@ -371,7 +372,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### App Structure
 
-- [ ] Copy `crush-ref/internal/app/app.go` → `internal/app/app.go`
+- [ ] Copy `crush/internal/app/app.go` → `internal/app/app.go`
 - [ ] Update `App` struct:
   - [ ] `Sessions` → `Interviews` (type: `interview.Service`)
   - [ ] `AgentCoordinator` → `CoachCoordinator` (type: `coach.CoachCoordinator`)
@@ -399,16 +400,16 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Message Service
 
-- [ ] Copy `crush-ref/internal/message/` → `internal/message/`
+- [ ] Copy `crush/internal/message/` → `internal/message/`
   - [ ] Update package imports
   - [ ] Keep structure (messages work the same way)
   - [ ] Update references: `session.Session` → `interview.Interview` (if any)
 
 ### Database Connection
 
-- [ ] Copy `crush-ref/internal/db/connect.go` → `internal/db/connect.go`
-- [ ] Copy `crush-ref/internal/db/db.go` → `internal/db/db.go`
-- [ ] Copy `crush-ref/internal/db/embed.go` → `internal/db/embed.go`
+- [ ] Copy `crush/internal/db/connect.go` → `internal/db/connect.go`
+- [ ] Copy `crush/internal/db/db.go` → `internal/db/db.go`
+- [ ] Copy `crush/internal/db/embed.go` → `internal/db/embed.go`
 - [ ] Update migrations path/embedding
 - [ ] Update connection logic for interviews database
 
@@ -421,12 +422,12 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
   - [ ] Adapt: login command (remove copilot/hyper, keep OpenAI/Anthropic)
 
 - [ ] Create/update `internal/cli/run.go` (for non-interactive interview mode)
-  - [ ] Copy from `crush-ref/internal/cmd/run.go`
+  - [ ] Copy from `crush/internal/cmd/run.go`
   - [ ] Adapt for interview context
   - [ ] Update to use coach instead of agent
 
 - [ ] Create/update login command:
-  - [ ] Copy `crush-ref/internal/cmd/login.go` → `internal/cli/login.go`
+  - [ ] Copy `crush/internal/cmd/login.go` → `internal/cli/login.go`
   - [ ] Remove copilot/hyper login functions
   - [ ] Keep claude/anthropic login
   - [ ] Keep OpenAI API key setup
@@ -493,12 +494,12 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Key Files to Reference
 
-- `crush-ref/internal/tui/styles/theme.go` - Core styling system
-- `crush-ref/internal/config/config.go` - Configuration structure
-- `crush-ref/internal/agent/coordinator.go:708-754` - Provider setup (already uses standard providers)
-- `crush-ref/internal/session/session.go` - Session model (adapt to Interview)
-- `crush-ref/internal/app/app.go:66-118` - Application initialization
-- `crush-ref/internal/tui/tui.go:688-710` - TUI initialization
+- `crush/internal/tui/styles/theme.go` - Core styling system
+- `crush/internal/config/config.go` - Configuration structure
+- `crush/internal/agent/coordinator.go:708-754` - Provider setup (already uses standard providers)
+- `crush/internal/session/session.go` - Session model (adapt to Interview)
+- `crush/internal/app/app.go:66-118` - Application initialization
+- `crush/internal/tui/tui.go:688-710` - TUI initialization
 
 ### Important Adaptations
 

@@ -17,64 +17,64 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ---
 
-## Phase 1: Foundation (Core Infrastructure)
+## Phase 1: Foundation (Core Infrastructure) ✅
 
 ### Copy Pure UI/Config Packages
 
-- [ ] Copy `crush/internal/tui/styles/` → `internal/ui/styles/`
-  - [ ] `theme.go` - Core theme definitions
-  - [ ] `charmtone.go` - Default theme
-  - [ ] `chroma.go` - Syntax highlighting
-  - [ ] `icons.go` - Icon definitions
-  - [ ] `markdown.go` - Markdown rendering
+- [x] Copy `crush/internal/tui/styles/` → `internal/ui/styles/`
+  - [x] `theme.go` - Core theme definitions
+  - [x] `charmtone.go` - Default theme
+  - [x] `chroma.go` - Syntax highlighting
+  - [x] `icons.go` - Icon definitions
+  - [x] `markdown.go` - Markdown rendering
 
-- [ ] Copy `crush/internal/tui/components/core/` → `internal/ui/components/core/`
-  - [ ] `core.go`
-  - [ ] `layout/layout.go`
-  - [ ] `status/status.go`
-  - [ ] Test files
+- [x] Copy `crush/internal/tui/components/core/` → `internal/ui/components/core/`
+  - [x] `core.go`
+  - [x] `layout/layout.go`
+  - [x] `status/status.go`
+  - [x] Test files
 
-- [ ] Copy `crush/internal/tui/components/dialogs/` → `internal/ui/components/dialogs/`
-  - [ ] `dialogs.go`
-  - [ ] `models/` (model selection dialogs)
-  - [ ] `permissions/` (simplified for interviews)
-  - [ ] `quit/` (quit confirmation)
-  - [ ] `filepicker/` (if needed for solution files)
-  - [ ] Remove: `copilot/`, `hyper/` (service-specific OAuth)
-  - [ ] Remove: `sessions/` (will adapt to interviews later)
+- [x] Copy `crush/internal/tui/components/dialogs/` → `internal/ui/components/dialogs/`
+  - [x] `dialogs.go`
+  - [x] `models/` (model selection dialogs)
+  - [x] `permissions/` (simplified for interviews)
+  - [x] `quit/` (quit confirmation)
+  - [x] `filepicker/` (if needed for solution files)
+  - [x] Remove: `copilot/`, `hyper/` (service-specific OAuth)
+  - [x] Remove: `sessions/` (will adapt to interviews later)
 
-- [ ] Copy `crush/internal/tui/components/completions/` → `internal/ui/components/completions/`
-  - [ ] `completions.go`
-  - [ ] `keys.go`
+- [x] Copy `crush/internal/tui/components/completions/` → `internal/ui/components/completions/`
+  - [x] `completions.go`
+  - [x] `keys.go`
 
-- [ ] Copy `crush/internal/tui/components/anim/` → `internal/ui/components/anim/`
-  - [ ] `anim.go`
+- [x] Copy `crush/internal/tui/components/anim/` → `internal/ui/components/anim/`
+  - [x] `anim.go`
 
-- [ ] Copy `crush/internal/tui/util/` → `internal/ui/util/`
-  - [ ] `util.go`
-  - [ ] `shell.go`
+- [x] Copy `crush/internal/tui/util/` → `internal/ui/util/`
+  - [x] `util.go`
+  - [x] `shell.go`
 
-- [ ] Copy `crush/internal/tui/keys.go` → `internal/ui/keys.go`
+- [x] Copy `crush/internal/tui/keys.go` → `internal/ui/keys.go`
 
-- [ ] Copy utility packages:
-  - [ ] `csync/` → `internal/csync/`
-  - [ ] `pubsub/` → `internal/pubsub/`
-  - [ ] `event/` → `internal/event/`
-  - [ ] `format/` → `internal/format/`
-  - [ ] `stringext/` → `internal/stringext/`
-  - [ ] `filepathext/` → `internal/filepathext/`
-  - [ ] `ansiext/` → `internal/ansiext/`
+- [x] Copy utility packages:
+  - [x] `csync/` → `internal/csync/`
+  - [x] `pubsub/` → `internal/pubsub/`
+  - [x] `event/` → `internal/event/`
+  - [x] `format/` → `internal/format/`
+  - [x] `stringext/` → `internal/stringext/`
+  - [x] `filepathext/` → `internal/filepathext/`
+  - [x] `ansiext/` → `internal/ansiext/`
 
-- [ ] Copy `crush/internal/config/` structure → `internal/config/` (skeleton)
-  - [ ] Copy `load.go`, `merge.go`, `resolve.go`, `provider.go` (structure)
-  - [ ] Copy `config.go` (as template for adaptation)
-  - [ ] Copy test files for reference
+- [x] Copy `crush/internal/config/` structure → `internal/config/` (skeleton)
+  - [x] Copy `load.go`, `merge.go`, `resolve.go`, `provider.go` (structure)
+  - [x] Copy `config.go` (as template for adaptation)
+  - [x] Copy test files for reference
 
 ### Update Package Imports
 
-- [ ] Replace all `github.com/charmbracelet/crush/internal` → `prepf/internal` (or appropriate package path)
-- [ ] Update all internal imports in copied files
-- [ ] Verify no broken imports remain
+- [x] Replace all `github.com/charmbracelet/crush/internal` → `prepf/internal` (or appropriate package path)
+- [x] Update all internal imports in copied files
+- [x] Verify no broken imports remain
 
 ---
 
@@ -523,5 +523,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 **Status**: 🚧 In Progress
 
-**Last Updated**: [Date]
+**Last Updated**: 2025-01-27
+
+**Phase 1 Status**: ✅ Complete - All foundation infrastructure copied and imports updated
 

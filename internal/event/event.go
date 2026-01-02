@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"runtime"
 
-	"github.com/trankhanh040147/prepf/internal/version"
 	"github.com/posthog/posthog-go"
+	"github.com/trankhanh040147/prepf/internal/version"
 )
 
 const (

@@ -6,7 +6,7 @@ import (
 
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
-	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/alecthomas/chroma/v2"
 	"github.com/charmbracelet/crush/internal/tui/exp/diffview"
 	"github.com/charmbracelet/crush/internal/tui/styles"

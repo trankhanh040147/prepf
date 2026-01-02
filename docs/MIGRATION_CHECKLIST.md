@@ -82,51 +82,45 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Database Schema Migration
 
-- [ ] Create `internal/db/sql/interviews.sql` (copy from `crush/internal/db/sql/sessions.sql`)
-  - [ ] Rename table: `sessions` → `interviews`
-  - [ ] Remove `parent_session_id` column (interviews are standalone)
-  - [ ] Add interview-specific fields (if needed):
-    - [ ] `difficulty` (TEXT: easy/medium/hard)
-    - [ ] `topic` (TEXT: algorithms/system-design/etc.)
-    - [ ] `status` (TEXT: in-progress/completed/abandoned)
-  - [ ] Keep: `id`, `title`, `message_count`, `prompt_tokens`, `completion_tokens`, `cost`, `summary_message_id`, `todos`, `created_at`, `updated_at`
+- [x] Create `internal/db/sql/interviews.sql` (copy from `crush/internal/db/sql/sessions.sql`)
+  - [x] Rename table: `sessions` → `interviews`
+  - [x] Remove `parent_session_id` column (interviews are standalone)
+  - [x] Add interview-specific fields (if needed):
+    - [x] `difficulty` (TEXT: easy/medium/hard)
+    - [x] `topic` (TEXT: algorithms/system-design/etc.)
+    - [x] `status` (TEXT: in-progress/completed/abandoned)
+  - [x] Keep: `id`, `title`, `message_count`, `prompt_tokens`, `completion_tokens`, `cost`, `summary_message_id`, `todos`, `created_at`, `updated_at`
 
-- [ ] Create initial migration: `internal/db/migrations/000001_initial_interviews.sql`
-  - [ ] Copy structure from crush's initial migration
-  - [ ] Adapt for interviews schema
+- [x] Create initial migration: `internal/db/migrations/000001_initial_interviews.sql`
+  - [x] Copy structure from crush's initial migration
+  - [x] Adapt for interviews schema
 
-- [ ] Update `internal/db/models.go`:
-  - [ ] Rename `Session` → `Interview`
-  - [ ] Update fields to match new schema
-  - [ ] Remove `ParentSessionID` field
+- [x] Update `internal/db/models.go`:
+  - [x] Rename `Session` → `Interview`
+  - [x] Update fields to match new schema
+  - [x] Remove `ParentSessionID` field
 
-- [ ] Create `internal/db/sql/interviews.sql` queries file (copy from `sessions.sql`)
-  - [ ] Update all query names: `CreateSession` → `CreateInterview`
-  - [ ] Update all SQL to use `interviews` table
-  - [ ] Remove parent session related queries
-
-- [ ] Run `sqlc generate` to regenerate query code
-- [ ] Verify generated code compiles
+- [x] Run `sqlc generate` to regenerate query code
+- [x] Verify generated code compiles
 
 ### Session → Interview Service
 
-- [ ] Copy `crush/internal/session/session.go` → `internal/interview/interview.go`
-- [ ] Rename package: `session` → `interview`
-- [ ] Rename `Session` struct → `Interview`
-- [ ] Rename `Service` interface → `InterviewService` (or keep `Service` in interview package)
-- [ ] Update all method signatures:
-  - [ ] `Create()` → keep (create interview)
-  - [ ] Remove: `CreateTitleSession()`, `CreateTaskSession()` (not needed)
-  - [ ] `Get()` → keep
-  - [ ] `List()` → keep
-  - [ ] `Save()` → keep
-  - [ ] `UpdateTitleAndUsage()` → keep
-  - [ ] `Delete()` → keep
-  - [ ] Remove: `CreateAgentToolSessionID()`, `ParseAgentToolSessionID()`, `IsAgentToolSession()` (agent-specific)
-
-- [ ] Update `Todo` struct (keep same structure, but in interview package)
-- [ ] Update all references from `session.Session` → `interview.Interview`
-- [ ] Update pubsub broker: `pubsub.Broker[Session]` → `pubsub.Broker[Interview]`
+- [x] Copy `crush/internal/session/session.go` → `internal/interview/interview.go`
+- [x] Rename package: `session` → `interview`
+- [x] Rename `Session` struct → `Interview`
+- [x] Rename `Service` interface → `InterviewService` (or keep `Service` in interview package)
+- [x] Update all method signatures:
+  - [x] `Create()` → keep (create interview)
+  - [x] Remove: `CreateTitleSession()`, `CreateTaskSession()` (not needed)
+  - [x] `Get()` → keep
+  - [x] `List()` → keep
+  - [x] `Save()` → keep
+  - [x] `UpdateTitleAndUsage()` → keep
+  - [x] `Delete()` → keep
+  - [x] Remove: `CreateAgentToolSessionID()`, `ParseAgentToolSessionID()`, `IsAgentToolSession()` (agent-specific)
+- [x] Update `Todo` struct (keep same structure, but in interview package)
+- [x] Update all references from `session.Session` → `interview.Interview`
+- [x] Update pubsub broker: `pubsub.Broker[Session]` → `pubsub.Broker[Interview]`
 
 ---
 

@@ -1,7 +1,7 @@
 package styles
 
 import (
-	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/charmbracelet/x/exp/charmtone"
 )
 

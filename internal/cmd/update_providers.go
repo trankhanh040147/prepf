@@ -5,9 +5,9 @@ import (
 	"log/slog"
 
 	"github.com/charmbracelet/lipgloss/v2"
-	"github.com/charmbracelet/crush/internal/config"
 	"github.com/charmbracelet/x/exp/charmtone"
 	"github.com/spf13/cobra"
+	"github.com/trankhanh040147/prepf/internal/config"
 )
 
 var updateProvidersSource string

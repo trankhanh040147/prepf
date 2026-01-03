@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/charmbracelet/crush/internal/config"
 	"github.com/invopop/jsonschema"
 	"github.com/spf13/cobra"
+	"github.com/trankhanh040147/prepf/internal/config"
 )
 
 var schemaCmd = &cobra.Command{

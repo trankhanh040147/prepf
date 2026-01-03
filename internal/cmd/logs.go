@@ -12,10 +12,10 @@ import (
 
 	"charm.land/log/v2"
 	"github.com/charmbracelet/colorprofile"
-	"github.com/charmbracelet/crush/internal/config"
 	"github.com/charmbracelet/x/term"
 	"github.com/nxadm/tail"
 	"github.com/spf13/cobra"
+	"github.com/trankhanh040147/prepf/internal/config"
 )
 
 const defaultTailLines = 1000

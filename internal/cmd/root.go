@@ -14,14 +14,6 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/colorprofile"
-	"github.com/charmbracelet/crush/internal/app"
-	"github.com/charmbracelet/crush/internal/config"
-	"github.com/charmbracelet/crush/internal/db"
-	"github.com/charmbracelet/crush/internal/event"
-	"github.com/charmbracelet/crush/internal/projects"
-	"github.com/charmbracelet/crush/internal/stringext"
-	"github.com/charmbracelet/crush/internal/tui"
-	"github.com/charmbracelet/crush/internal/version"
 	"github.com/charmbracelet/fang"
 	"github.com/charmbracelet/lipgloss/v2"
 	uv "github.com/charmbracelet/ultraviolet"
@@ -29,11 +21,19 @@ import (
 	"github.com/charmbracelet/x/exp/charmtone"
 	"github.com/charmbracelet/x/term"
 	"github.com/spf13/cobra"
+	"github.com/trankhanh040147/prepf/internal/app"
+	"github.com/trankhanh040147/prepf/internal/config"
+	"github.com/trankhanh040147/prepf/internal/db"
+	"github.com/trankhanh040147/prepf/internal/event"
+	"github.com/trankhanh040147/prepf/internal/projects"
+	"github.com/trankhanh040147/prepf/internal/stringext"
+	"github.com/trankhanh040147/prepf/internal/tui"
+	"github.com/trankhanh040147/prepf/internal/version"
 )
 
 func init() {
 	rootCmd.PersistentFlags().StringP("cwd", "c", "", "Current working directory")
-	rootCmd.PersistentFlags().StringP("data-dir", "D", "", "Custom crush data directory")
+	rootCmd.PersistentFlags().StringP("data-dir", "D", "", "Custom prepf data directory")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug")
 	rootCmd.Flags().BoolP("help", "h", false, "Help")
 	rootCmd.Flags().BoolP("yolo", "y", false, "Automatically accept all permissions (dangerous mode)")
@@ -50,7 +50,7 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "crush",
+	Use:   "prepf",
 	Short: "Terminal-based AI assistant for software development",
 	Long: `prepf is a powerful terminal-based AI assistant that helps with software development tasks.
 It provides an interactive chat interface with AI capabilities, code analysis, and LSP integration
@@ -66,7 +66,7 @@ prepf -d
 prepf -d -c /path/to/project
 
 # Run with custom data directory
-prepf -D /path/to/custom/.crush
+prepf -D /path/to/custom/.prepf
 
 # Print version
 prepf -v
@@ -110,18 +110,13 @@ prepf -y
 	},
 }
 
-var heartbit = lipgloss.NewStyle().Foreground(charmtone.Dolly).SetString(`
-    ▄▄▄▄▄▄▄▄    ▄▄▄▄▄▄▄▄
-  ███████████  ███████████
-████████████████████████████
-████████████████████████████
-██████████▀██████▀██████████
-██████████ ██████ ██████████
-▀▀██████▄████▄▄████▄██████▀▀
-  ████████████████████████
-    ████████████████████
-       ▀▀██████████▀▀
-           ▀▀▀▀▀▀
+var logo = lipgloss.NewStyle().Foreground(charmtone.Dolly).SetString(`
+	██████╗ ██████╗ ███████╗██████╗ ███████╗
+	██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝
+	██████╔╝██████╔╝█████╗  ██████╔╝█████╗  
+	██╔═══╝ ██╔══██╗██╔══╝  ██╔═══╝ ██╔══╝  
+	██║     ██║  ██║███████╗██║     ██║     
+	╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝
 `)
 
 // copied from cobra:
@@ -140,7 +135,7 @@ func Execute() {
 		var b bytes.Buffer
 		w := colorprofile.NewWriter(os.Stdout, os.Environ())
 		w.Forward = &b
-		_, _ = w.WriteString(heartbit.String())
+		_, _ = w.WriteString(logo.String())
 		rootCmd.SetVersionTemplate(b.String() + "\n" + defaultVersionTemplate)
 	}
 	if err := fang.Execute(
@@ -197,7 +192,7 @@ func setupApp(cmd *cobra.Command) (*app.App, error) {
 	}
 	cfg.Permissions.SkipRequests = yolo
 
-	if err := createDotCrushDir(cfg.Options.DataDirectory); err != nil {
+	if err := createDotprepfDir(cfg.Options.DataDirectory); err != nil {
 		return nil, err
 	}
 
@@ -227,7 +222,7 @@ func setupApp(cmd *cobra.Command) (*app.App, error) {
 }
 
 func shouldEnableMetrics() bool {
-	if v, _ := strconv.ParseBool(os.Getenv("CRUSH_DISABLE_METRICS")); v {
+	if v, _ := strconv.ParseBool(os.Getenv("prepf_DISABLE_METRICS")); v {
 		return false
 	}
 	if v, _ := strconv.ParseBool(os.Getenv("DO_NOT_TRACK")); v {
@@ -274,7 +269,7 @@ func ResolveCwd(cmd *cobra.Command) (string, error) {
 	return cwd, nil
 }
 
-func createDotCrushDir(dir string) error {
+func createDotprepfDir(dir string) error {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return fmt.Errorf("failed to create data directory: %q %w", dir, err)
 	}

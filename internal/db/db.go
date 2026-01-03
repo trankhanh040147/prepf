@@ -30,14 +30,17 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createMessageStmt, err = db.PrepareContext(ctx, createMessage); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateMessage: %w", err)
 	}
+	if q.createSessionStmt, err = db.PrepareContext(ctx, createSession); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateSession: %w", err)
+	}
 	if q.deleteFileStmt, err = db.PrepareContext(ctx, deleteFile); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteFile: %w", err)
 	}
-	if q.deleteInterviewStmt, err = db.PrepareContext(ctx, deleteInterview); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteInterview: %w", err)
-	}
 	if q.deleteMessageStmt, err = db.PrepareContext(ctx, deleteMessage); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteMessage: %w", err)
+	}
+	if q.deleteSessionStmt, err = db.PrepareContext(ctx, deleteSession); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteSession: %w", err)
 	}
 	if q.deleteSessionFilesStmt, err = db.PrepareContext(ctx, deleteSessionFiles); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteSessionFiles: %w", err)
@@ -51,20 +54,17 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getFileByPathAndSessionStmt, err = db.PrepareContext(ctx, getFileByPathAndSession); err != nil {
 		return nil, fmt.Errorf("error preparing query GetFileByPathAndSession: %w", err)
 	}
-	if q.getInterviewByIDStmt, err = db.PrepareContext(ctx, getInterviewByID); err != nil {
-		return nil, fmt.Errorf("error preparing query GetInterviewByID: %w", err)
-	}
 	if q.getMessageStmt, err = db.PrepareContext(ctx, getMessage); err != nil {
 		return nil, fmt.Errorf("error preparing query GetMessage: %w", err)
+	}
+	if q.getSessionByIDStmt, err = db.PrepareContext(ctx, getSessionByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetSessionByID: %w", err)
 	}
 	if q.listFilesByPathStmt, err = db.PrepareContext(ctx, listFilesByPath); err != nil {
 		return nil, fmt.Errorf("error preparing query ListFilesByPath: %w", err)
 	}
 	if q.listFilesBySessionStmt, err = db.PrepareContext(ctx, listFilesBySession); err != nil {
 		return nil, fmt.Errorf("error preparing query ListFilesBySession: %w", err)
-	}
-	if q.listInterviewsStmt, err = db.PrepareContext(ctx, listInterviews); err != nil {
-		return nil, fmt.Errorf("error preparing query ListInterviews: %w", err)
 	}
 	if q.listLatestSessionFilesStmt, err = db.PrepareContext(ctx, listLatestSessionFiles); err != nil {
 		return nil, fmt.Errorf("error preparing query ListLatestSessionFiles: %w", err)
@@ -75,14 +75,17 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listNewFilesStmt, err = db.PrepareContext(ctx, listNewFiles); err != nil {
 		return nil, fmt.Errorf("error preparing query ListNewFiles: %w", err)
 	}
-	if q.updateInterviewStmt, err = db.PrepareContext(ctx, updateInterview); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateInterview: %w", err)
-	}
-	if q.updateInterviewTitleAndUsageStmt, err = db.PrepareContext(ctx, updateInterviewTitleAndUsage); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateInterviewTitleAndUsage: %w", err)
+	if q.listSessionsStmt, err = db.PrepareContext(ctx, listSessions); err != nil {
+		return nil, fmt.Errorf("error preparing query ListSessions: %w", err)
 	}
 	if q.updateMessageStmt, err = db.PrepareContext(ctx, updateMessage); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateMessage: %w", err)
+	}
+	if q.updateSessionStmt, err = db.PrepareContext(ctx, updateSession); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateSession: %w", err)
+	}
+	if q.updateSessionTitleAndUsageStmt, err = db.PrepareContext(ctx, updateSessionTitleAndUsage); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateSessionTitleAndUsage: %w", err)
 	}
 	return &q, nil
 }
@@ -99,19 +102,24 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createMessageStmt: %w", cerr)
 		}
 	}
+	if q.createSessionStmt != nil {
+		if cerr := q.createSessionStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createSessionStmt: %w", cerr)
+		}
+	}
 	if q.deleteFileStmt != nil {
 		if cerr := q.deleteFileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteFileStmt: %w", cerr)
 		}
 	}
-	if q.deleteInterviewStmt != nil {
-		if cerr := q.deleteInterviewStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteInterviewStmt: %w", cerr)
-		}
-	}
 	if q.deleteMessageStmt != nil {
 		if cerr := q.deleteMessageStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteMessageStmt: %w", cerr)
+		}
+	}
+	if q.deleteSessionStmt != nil {
+		if cerr := q.deleteSessionStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteSessionStmt: %w", cerr)
 		}
 	}
 	if q.deleteSessionFilesStmt != nil {
@@ -134,14 +142,14 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getFileByPathAndSessionStmt: %w", cerr)
 		}
 	}
-	if q.getInterviewByIDStmt != nil {
-		if cerr := q.getInterviewByIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getInterviewByIDStmt: %w", cerr)
-		}
-	}
 	if q.getMessageStmt != nil {
 		if cerr := q.getMessageStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getMessageStmt: %w", cerr)
+		}
+	}
+	if q.getSessionByIDStmt != nil {
+		if cerr := q.getSessionByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getSessionByIDStmt: %w", cerr)
 		}
 	}
 	if q.listFilesByPathStmt != nil {
@@ -152,11 +160,6 @@ func (q *Queries) Close() error {
 	if q.listFilesBySessionStmt != nil {
 		if cerr := q.listFilesBySessionStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listFilesBySessionStmt: %w", cerr)
-		}
-	}
-	if q.listInterviewsStmt != nil {
-		if cerr := q.listInterviewsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listInterviewsStmt: %w", cerr)
 		}
 	}
 	if q.listLatestSessionFilesStmt != nil {
@@ -174,19 +177,24 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listNewFilesStmt: %w", cerr)
 		}
 	}
-	if q.updateInterviewStmt != nil {
-		if cerr := q.updateInterviewStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateInterviewStmt: %w", cerr)
-		}
-	}
-	if q.updateInterviewTitleAndUsageStmt != nil {
-		if cerr := q.updateInterviewTitleAndUsageStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateInterviewTitleAndUsageStmt: %w", cerr)
+	if q.listSessionsStmt != nil {
+		if cerr := q.listSessionsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listSessionsStmt: %w", cerr)
 		}
 	}
 	if q.updateMessageStmt != nil {
 		if cerr := q.updateMessageStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateMessageStmt: %w", cerr)
+		}
+	}
+	if q.updateSessionStmt != nil {
+		if cerr := q.updateSessionStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateSessionStmt: %w", cerr)
+		}
+	}
+	if q.updateSessionTitleAndUsageStmt != nil {
+		if cerr := q.updateSessionTitleAndUsageStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateSessionTitleAndUsageStmt: %w", cerr)
 		}
 	}
 	return err
@@ -226,53 +234,55 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                               DBTX
-	tx                               *sql.Tx
-	createFileStmt                   *sql.Stmt
-	createMessageStmt                *sql.Stmt
-	deleteFileStmt                   *sql.Stmt
-	deleteInterviewStmt              *sql.Stmt
-	deleteMessageStmt                *sql.Stmt
-	deleteSessionFilesStmt           *sql.Stmt
-	deleteSessionMessagesStmt        *sql.Stmt
-	getFileStmt                      *sql.Stmt
-	getFileByPathAndSessionStmt      *sql.Stmt
-	getInterviewByIDStmt             *sql.Stmt
-	getMessageStmt                   *sql.Stmt
-	listFilesByPathStmt              *sql.Stmt
-	listFilesBySessionStmt           *sql.Stmt
-	listInterviewsStmt               *sql.Stmt
-	listLatestSessionFilesStmt       *sql.Stmt
-	listMessagesBySessionStmt        *sql.Stmt
-	listNewFilesStmt                 *sql.Stmt
-	updateInterviewStmt              *sql.Stmt
-	updateInterviewTitleAndUsageStmt *sql.Stmt
-	updateMessageStmt                *sql.Stmt
+	db                             DBTX
+	tx                             *sql.Tx
+	createFileStmt                 *sql.Stmt
+	createMessageStmt              *sql.Stmt
+	createSessionStmt              *sql.Stmt
+	deleteFileStmt                 *sql.Stmt
+	deleteMessageStmt              *sql.Stmt
+	deleteSessionStmt              *sql.Stmt
+	deleteSessionFilesStmt         *sql.Stmt
+	deleteSessionMessagesStmt      *sql.Stmt
+	getFileStmt                    *sql.Stmt
+	getFileByPathAndSessionStmt    *sql.Stmt
+	getMessageStmt                 *sql.Stmt
+	getSessionByIDStmt             *sql.Stmt
+	listFilesByPathStmt            *sql.Stmt
+	listFilesBySessionStmt         *sql.Stmt
+	listLatestSessionFilesStmt     *sql.Stmt
+	listMessagesBySessionStmt      *sql.Stmt
+	listNewFilesStmt               *sql.Stmt
+	listSessionsStmt               *sql.Stmt
+	updateMessageStmt              *sql.Stmt
+	updateSessionStmt              *sql.Stmt
+	updateSessionTitleAndUsageStmt *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                               tx,
-		tx:                               tx,
-		createFileStmt:                   q.createFileStmt,
-		createMessageStmt:                q.createMessageStmt,
-		deleteFileStmt:                   q.deleteFileStmt,
-		deleteInterviewStmt:              q.deleteInterviewStmt,
-		deleteMessageStmt:                q.deleteMessageStmt,
-		deleteSessionFilesStmt:           q.deleteSessionFilesStmt,
-		deleteSessionMessagesStmt:        q.deleteSessionMessagesStmt,
-		getFileStmt:                      q.getFileStmt,
-		getFileByPathAndSessionStmt:      q.getFileByPathAndSessionStmt,
-		getInterviewByIDStmt:             q.getInterviewByIDStmt,
-		getMessageStmt:                   q.getMessageStmt,
-		listFilesByPathStmt:              q.listFilesByPathStmt,
-		listFilesBySessionStmt:           q.listFilesBySessionStmt,
-		listInterviewsStmt:               q.listInterviewsStmt,
-		listLatestSessionFilesStmt:       q.listLatestSessionFilesStmt,
-		listMessagesBySessionStmt:        q.listMessagesBySessionStmt,
-		listNewFilesStmt:                 q.listNewFilesStmt,
-		updateInterviewStmt:              q.updateInterviewStmt,
-		updateInterviewTitleAndUsageStmt: q.updateInterviewTitleAndUsageStmt,
-		updateMessageStmt:                q.updateMessageStmt,
+		db:                             tx,
+		tx:                             tx,
+		createFileStmt:                 q.createFileStmt,
+		createMessageStmt:              q.createMessageStmt,
+		createSessionStmt:              q.createSessionStmt,
+		deleteFileStmt:                 q.deleteFileStmt,
+		deleteMessageStmt:              q.deleteMessageStmt,
+		deleteSessionStmt:              q.deleteSessionStmt,
+		deleteSessionFilesStmt:         q.deleteSessionFilesStmt,
+		deleteSessionMessagesStmt:      q.deleteSessionMessagesStmt,
+		getFileStmt:                    q.getFileStmt,
+		getFileByPathAndSessionStmt:    q.getFileByPathAndSessionStmt,
+		getMessageStmt:                 q.getMessageStmt,
+		getSessionByIDStmt:             q.getSessionByIDStmt,
+		listFilesByPathStmt:            q.listFilesByPathStmt,
+		listFilesBySessionStmt:         q.listFilesBySessionStmt,
+		listLatestSessionFilesStmt:     q.listLatestSessionFilesStmt,
+		listMessagesBySessionStmt:      q.listMessagesBySessionStmt,
+		listNewFilesStmt:               q.listNewFilesStmt,
+		listSessionsStmt:               q.listSessionsStmt,
+		updateMessageStmt:              q.updateMessageStmt,
+		updateSessionStmt:              q.updateSessionStmt,
+		updateSessionTitleAndUsageStmt: q.updateSessionTitleAndUsageStmt,
 	}
 }

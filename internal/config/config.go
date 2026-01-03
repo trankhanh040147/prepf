@@ -15,6 +15,9 @@ import (
 	"time"
 
 	"github.com/charmbracelet/catwalk/pkg/catwalk"
+	"github.com/invopop/jsonschema"
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 	hyperp "github.com/trankhanh040147/prepf/internal/agent/hyper"
 	"github.com/trankhanh040147/prepf/internal/csync"
 	"github.com/trankhanh040147/prepf/internal/env"
@@ -22,9 +25,6 @@ import (
 	"github.com/trankhanh040147/prepf/internal/oauth/claude"
 	"github.com/trankhanh040147/prepf/internal/oauth/copilot"
 	"github.com/trankhanh040147/prepf/internal/oauth/hyper"
-	"github.com/invopop/jsonschema"
-	"github.com/tidwall/gjson"
-	"github.com/tidwall/sjson"
 )
 
 const (

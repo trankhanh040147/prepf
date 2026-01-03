@@ -11,24 +11,25 @@ import (
 type Querier interface {
 	CreateFile(ctx context.Context, arg CreateFileParams) (File, error)
 	CreateMessage(ctx context.Context, arg CreateMessageParams) (Message, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	DeleteFile(ctx context.Context, id string) error
-	DeleteInterview(ctx context.Context, id string) error
 	DeleteMessage(ctx context.Context, id string) error
+	DeleteSession(ctx context.Context, id string) error
 	DeleteSessionFiles(ctx context.Context, sessionID string) error
 	DeleteSessionMessages(ctx context.Context, sessionID string) error
 	GetFile(ctx context.Context, id string) (File, error)
 	GetFileByPathAndSession(ctx context.Context, arg GetFileByPathAndSessionParams) (File, error)
-	GetInterviewByID(ctx context.Context, id string) (Interview, error)
 	GetMessage(ctx context.Context, id string) (Message, error)
+	GetSessionByID(ctx context.Context, id string) (Session, error)
 	ListFilesByPath(ctx context.Context, path string) ([]File, error)
 	ListFilesBySession(ctx context.Context, sessionID string) ([]File, error)
-	ListInterviews(ctx context.Context) ([]Interview, error)
 	ListLatestSessionFiles(ctx context.Context, sessionID string) ([]File, error)
 	ListMessagesBySession(ctx context.Context, sessionID string) ([]Message, error)
 	ListNewFiles(ctx context.Context) ([]File, error)
-	UpdateInterview(ctx context.Context, arg UpdateInterviewParams) (Interview, error)
-	UpdateInterviewTitleAndUsage(ctx context.Context, arg UpdateInterviewTitleAndUsageParams) error
+	ListSessions(ctx context.Context) ([]Session, error)
 	UpdateMessage(ctx context.Context, arg UpdateMessageParams) error
+	UpdateSession(ctx context.Context, arg UpdateSessionParams) (Session, error)
+	UpdateSessionTitleAndUsage(ctx context.Context, arg UpdateSessionTitleAndUsageParams) error
 }
 
 var _ Querier = (*Queries)(nil)

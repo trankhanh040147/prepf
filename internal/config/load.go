@@ -18,13 +18,13 @@ import (
 	"testing"
 
 	"github.com/charmbracelet/catwalk/pkg/catwalk"
+	powernapConfig "github.com/charmbracelet/x/powernap/pkg/config"
 	"github.com/trankhanh040147/prepf/internal/agent/hyper"
 	"github.com/trankhanh040147/prepf/internal/csync"
 	"github.com/trankhanh040147/prepf/internal/env"
 	"github.com/trankhanh040147/prepf/internal/fsext"
 	"github.com/trankhanh040147/prepf/internal/home"
 	"github.com/trankhanh040147/prepf/internal/log"
-	powernapConfig "github.com/charmbracelet/x/powernap/pkg/config"
 )
 
 const defaultCatwalkURL = "https://catwalk.charm.sh"

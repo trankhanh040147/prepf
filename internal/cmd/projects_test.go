@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/charmbracelet/crush/internal/projects"
 	"github.com/stretchr/testify/require"
+	"github.com/trankhanh040147/prepf/internal/projects"
 )
 
 func TestProjectsEmpty(t *testing.T) {

@@ -7,8 +7,8 @@ import (
 	"os"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/trankhanh040147/prepf/internal/ui/components/anim"
 	"github.com/charmbracelet/x/ansi"
+	"github.com/trankhanh040147/prepf/internal/ui/components/anim"
 )
 
 // Spinner wraps the bubbles spinner for non-interactive mode

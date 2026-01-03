@@ -6,9 +6,9 @@ import (
 
 	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/charmbracelet/lipgloss/v2/table"
-	"github.com/charmbracelet/crush/internal/projects"
 	"github.com/charmbracelet/x/term"
 	"github.com/spf13/cobra"
+	"github.com/trankhanh040147/prepf/internal/projects"
 )
 
 var projectsCmd = &cobra.Command{

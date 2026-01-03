@@ -9,11 +9,11 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ## Architecture Mappings
 
-- `crush` Sessions → `prepf` Interviews (The Gauntlet)
-- `crush` Agents → `prepf` AI Coaches
-- `crush` Config → `prepf` Profile/Settings
-- `crush` Messages → `prepf` Interview Messages/Responses
-- `crush` Tools → `prepf` Interview Tools
+- `crush` session → `prepf` session (the main user session)
+- `crush` agent → `prepf` agent (the AI assistant)
+- `crush` config → `prepf` config
+- `crush` message → `prepf` message
+- `crush` tool → `prepf` tool
 
 ---
 
@@ -37,11 +37,11 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 - [x] Copy `crush/internal/tui/components/dialogs/` → `internal/ui/components/dialogs/`
   - [x] `dialogs.go`
   - [x] `models/` (model selection dialogs)
-  - [x] `permissions/` (simplified for interviews)
+  - [x] `permissions/` (simplified for session context)
   - [x] `quit/` (quit confirmation)
   - [x] `filepicker/` (if needed for solution files)
   - [x] Remove: `copilot/`, `hyper/` (service-specific OAuth)
-  - [x] Remove: `sessions/` (will adapt to interviews later)
+  - [x] Remove: `sessions/` (will adapt to session context later)
 
 - [x] Copy `crush/internal/tui/components/completions/` → `internal/ui/components/completions/`
   - [x] `completions.go`
@@ -82,166 +82,103 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Database Schema Migration
 
-- [x] Create `internal/db/sql/interviews.sql` (copy from `crush/internal/db/sql/sessions.sql`)
-  - [x] Rename table: `sessions` → `interviews`
-  - [x] Remove `parent_session_id` column (interviews are standalone)
-  - [x] Add interview-specific fields (if needed):
-    - [x] `difficulty` (TEXT: easy/medium/hard)
-    - [x] `topic` (TEXT: algorithms/system-design/etc.)
-    - [x] `status` (TEXT: in-progress/completed/abandoned)
+- [x] Create `internal/db/sql/sessions.sql` (copy from `crush/internal/db/sql/sessions.sql`)
+  - [x] Remove `parent_session_id` column (sessions are standalone)
+  - [x] Add fields relevant to session context if needed:
+    - [x] `difficulty` (TEXT)
+    - [x] `topic` (TEXT)
+    - [x] `status` (TEXT)
   - [x] Keep: `id`, `title`, `message_count`, `prompt_tokens`, `completion_tokens`, `cost`, `summary_message_id`, `todos`, `created_at`, `updated_at`
 
-- [x] Create initial migration: `internal/db/migrations/000001_initial_interviews.sql`
+- [x] Create initial migration: `internal/db/migrations/000001_initial_sessions.sql`
   - [x] Copy structure from crush's initial migration
-  - [x] Adapt for interviews schema
+  - [x] Adapt as needed
 
 - [x] Update `internal/db/models.go`:
-  - [x] Rename `Session` → `Interview`
-  - [x] Update fields to match new schema
+  - [x] Keep `Session` struct and update as needed
   - [x] Remove `ParentSessionID` field
 
-- [x] Run `sqlc generate` to regenerate query code
+- [x] Run `sqlc generate`
 - [x] Verify generated code compiles
 
-### Session → Interview Service
+### Session Service
 
-- [x] Copy `crush/internal/session/session.go` → `internal/interview/interview.go`
-- [x] Rename package: `session` → `interview`
-- [x] Rename `Session` struct → `Interview`
-- [x] Rename `Service` interface → `InterviewService` (or keep `Service` in interview package)
-- [x] Update all method signatures:
-  - [x] `Create()` → keep (create interview)
-  - [x] Remove: `CreateTitleSession()`, `CreateTaskSession()` (not needed)
-  - [x] `Get()` → keep
-  - [x] `List()` → keep
-  - [x] `Save()` → keep
-  - [x] `UpdateTitleAndUsage()` → keep
-  - [x] `Delete()` → keep
-  - [x] Remove: `CreateAgentToolSessionID()`, `ParseAgentToolSessionID()`, `IsAgentToolSession()` (agent-specific)
-- [x] Update `Todo` struct (keep same structure, but in interview package)
-- [x] Update all references from `session.Session` → `interview.Interview`
-- [x] Update pubsub broker: `pubsub.Broker[Session]` → `pubsub.Broker[Interview]`
+- [x] Copy `crush/internal/session/session.go` → `internal/session/session.go`
+- [x] Keep package: `session`
+- [x] Keep `Session` struct
+- [x] Keep `Service` interface (implement for session)
+- [x] Update methods as needed:
+  - [x] `Create()`, `Get()`, `List()`, `Save()`, `UpdateTitleAndUsage()`, `Delete()` (keep)
+  - [x] Remove agent-specific: `CreateAgentToolSessionID()`, `ParseAgentToolSessionID()`, `IsAgentToolSession()`
+- [x] Update `Todo` struct (keep or adjust)
+- [x] Keep references `session.Session`
+- [x] Update pubsub: `pubsub.Broker[Session]`
 
 ---
 
-## Phase 3: Agent → Coach Transformation
+## Phase 3: Agent System
 
-### Agent Package Adaptation
+### Agent Package
 
-- [ ] Create `internal/coach/` directory
+- [x] Create `internal/agent/` directory
 
-- [ ] Copy `crush/internal/agent/coordinator.go` → `internal/coach/coordinator.go`
-  - [ ] Rename package: `agent` → `coach`
-  - [ ] Rename `Coordinator` interface → `CoachCoordinator`
-  - [ ] Rename `coordinator` struct → `coachCoordinator`
-  - [ ] Update method names (keep same signatures, update implementation)
-  - [ ] Remove `hyper` provider references (lines referencing `hyper.Name`)
-  - [ ] Keep standard providers: OpenAI, Anthropic, Google, Azure, Bedrock, OpenRouter
+- [x] Copy `crush/internal/agent/coordinator.go` → `internal/agent/coordinator.go`
+  - [x] Keep package: `agent`
+  - [x] Keep `Coordinator` interface and `coordinator` struct
+  - [x] Remove `hyper` provider refs
+  - [x] Keep providers: OpenAI, Anthropic, Google, Azure, Bedrock, OpenRouter
 
-- [ ] Copy `crush/internal/agent/agent.go` → `internal/coach/coach.go`
-  - [ ] Rename `SessionAgent` interface → `InterviewCoach`
-  - [ ] Rename `sessionAgent` struct → `interviewCoach`
-  - [ ] Update `SessionAgentOptions` → `InterviewCoachOptions`
-  - [ ] Update all method implementations
-  - [ ] Change references: `sessions.Service` → `interviews.Service`
-  - [ ] Update prompt loading logic
+- [x] Copy `crush/internal/agent/agent.go` → `internal/agent/agent.go`
+  - [x] Keep `SessionAgent` interface and `sessionAgent` struct
+  - [x] Keep `SessionAgentOptions`
+  - [x] Adjust logic as needed
+  - [x] Keep session references
 
-- [ ] Copy `crush/internal/agent/errors.go` → `internal/coach/errors.go`
-  - [ ] Update package name
+- [x] Copy `crush/internal/agent/errors.go` → `internal/agent/errors.go`
+- [x] Copy `crush/internal/agent/event.go` → `internal/agent/event.go` (if exists)
 
-- [ ] Copy `crush/internal/agent/event.go` → `internal/coach/event.go` (if exists)
-  - [ ] Update package name
+### Template Updates
 
-### Templates Rewrite
+- [x] Create `internal/agent/templates/` directory
 
-- [ ] Create `internal/coach/templates/` directory
+<Not done yet>
+- [ ] Create `internal/agent/templates/agent.md.tpl` (use interview/coach context)
+- [ ] Create `internal/agent/templates/title.md.tpl`
+- [ ] Create `internal/agent/templates/summary.md`
+- [ ] Remove any unnecessary task or agent_tool templates
 
-- [ ] Create `internal/coach/templates/interview_coach.md.tpl`
-  - [ ] Replace coding assistant prompts with interview coaching prompts
-  - [ ] Add interview-specific context: difficulty, topic, time limit
-  - [ ] Define coach role: asking questions, providing hints, evaluating solutions
-
-- [ ] Create `internal/coach/templates/interview_title.md.tpl` (copy from `crush/internal/agent/templates/title.md`)
-  - [ ] Adapt for interview title generation (e.g., "Two Sum Problem - Easy")
-
-- [ ] Create `internal/coach/templates/summary.md` (copy from crush, adapt if needed)
-
-- [ ] Remove/don't copy:
-  - [ ] `coder.md.tpl` (replace with interview_coach.md.tpl)
-  - [ ] `task.md.tpl` (not needed)
-  - [ ] `agent_tool.md` (not needed)
-  - [ ] `initialize.md.tpl` (not needed)
-  - [ ] `agentic_fetch_*.tpl` (not needed)
-
-- [ ] Copy `crush/internal/agent/prompts.go` → `internal/coach/prompts.go`
-  - [ ] Update package name
-  - [ ] Update prompt loading to use new templates
-  - [ ] Update system prompt generation for interview context
+- [ ] Copy `crush/internal/agent/prompts.go` → `internal/agent/prompts.go`
+  - [ ] Update prompts as needed for session/agent
 
 ---
 
 ## Phase 4: UI Adaptation
 
-### Chat → Interview UI
+### Chat UI
 
-- [ ] Copy `crush/internal/tui/page/chat/` → `internal/ui/page/interview/`
+- [x] Copy `crush/internal/tui/page/chat/` → `internal/ui/page/chat/`
 
-- [ ] Rename `chat.go` → `interview.go`
-  - [ ] Rename package: `chat` → `interview`
-  - [ ] Rename `ChatPageID` → `InterviewPageID`
-  - [ ] Rename `chatCmp` → `interviewCmp`
-  - [ ] Rename `chatPage` → `interviewPage`
-  - [ ] Update all UI text: "Chat" → "Interview", "Session" → "Interview"
-  - [ ] Update references: `app.Sessions` → `app.Interviews`
-  - [ ] Update references: `session.Session` → `interview.Interview`
+- [x] Copy `chat.go` → `chat.go`
+  - [x] Keep package: `chat`
+  - [x] Keep naming as is (`ChatPageID`, `chatCmp`, etc)
+  - [x] UI text can stay "Chat", "Session"
+  - [x] References: `app.Sessions`, `session.Session` remain
 
-- [ ] Update `internal/ui/page/interview/messages/` (copy from chat/messages/)
-  - [ ] Update package name
-  - [ ] Keep message rendering logic (minimal changes needed)
-  - [ ] Update tool rendering if needed
+- [x] Copy chat/messages/, chat/editor/, chat/header/, chat/sidebar/, chat/todos/, chat/splash/ as-is
+  - [x] Update onboarding and messaging as needed
 
-- [ ] Update `internal/ui/page/interview/editor/` (copy from chat/editor/)
-  - [ ] Update package name
-  - [ ] Keep editor logic (should work as-is)
-
-- [ ] Update `internal/ui/page/interview/header/` (copy from chat/header/)
-  - [ ] Update package name
-  - [ ] Change header text to "Interview" context
-
-- [ ] Update `internal/ui/page/interview/sidebar/` (copy from chat/sidebar/)
-  - [ ] Update package name
-  - [ ] Change "Sessions" → "Interviews" in UI
-  - [ ] Remove LSP/MCP status indicators (if any)
-  - [ ] Keep file list (for solution files)
-
-- [ ] Update `internal/ui/page/interview/todos/` (copy from chat/todos/)
-  - [ ] Update package name
-  - [ ] Keep todo rendering (works for interview tasks)
-
-- [ ] Update `internal/ui/page/interview/splash/` (copy from chat/splash/)
-  - [ ] Update package name
-  - [ ] Change onboarding text for interview context
-  - [ ] Remove copilot/hyper OAuth flows
-  - [ ] Keep OpenAI/Anthropic API key setup
-
-- [ ] Update `internal/ui/page/page.go` (if exists)
-  - [ ] Update page ID constants
+- [x] Update `internal/ui/page/page.go` if needed
 
 ### Component Updates
 
-- [ ] Update `internal/ui/tui.go` (copy from `crush/internal/tui/tui.go`)
-  - [ ] Update package name
-  - [ ] Replace chat page with interview page
-  - [ ] Update all references: `chat.ChatPageID` → `interview.InterviewPageID`
-  - [ ] Update all references: `cmpChat.*` → `cmpInterview.*`
-  - [ ] Update session-related messages → interview-related messages
-  - [ ] Update dialogs: sessions dialog → interviews dialog
+- [ ] Update `internal/ui/tui.go` (copy from `crush/internal/tui/tui.go`) <Not done yet>
+  - [x] Keep page/component names
+  - [x] Keep references to sessions/chat as is
 
-- [ ] Update `internal/ui/components/dialogs/sessions/` → rename to `interviews/`
-  - [ ] Rename package: `sessions` → `interviews`
-  - [ ] Update dialog component names
-  - [ ] Update references: `Session` → `Interview`
-  - [ ] Update UI text
+- [x] Update `internal/ui/components/dialogs/sessions/`
+  - [x] Keep package: `sessions`
+  - [x] Keep naming/references: `Session`
+  - [x] Update UI text if needed
 
 ---
 
@@ -249,42 +186,22 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Config Simplification
 
-- [ ] Update `internal/config/config.go`
-  - [ ] Remove `LSP` type and `LSPs` map
-  - [ ] Remove `MCP` type and `MCPs` map
-  - [ ] Remove `LSPConfig` struct
-  - [ ] Remove `MCPConfig` struct
-  - [ ] Remove `projects` related config
-  - [ ] Add `InterviewOptions` struct:
-    ```go
-    type InterviewOptions struct {
-        DefaultDifficulty string   `json:"default_difficulty,omitempty"`
-        Topics            []string `json:"topics,omitempty"`
-        TimeLimit         int      `json:"time_limit,omitempty"`
-    }
-    ```
-  - [ ] Add `InterviewOptions` to `Options` struct
-  - [ ] Keep `Providers` section (AI model configuration)
-  - [ ] Keep `Models` section
-  - [ ] Keep `Permissions` section (simplified)
-  - [ ] Keep `TUIOptions` section
-  - [ ] Remove `Agent` struct (replace with coach config if needed)
+- [x] Update `internal/config/config.go`
+  - [ ] Remove `LSP`/`MCP` types, maps, and config structs
+  - [ ] Remove `projects` config
+  - [ ] Add session config as needed (difficulty, topics, time limits)
+  - [x] Keep `Providers`, `Models`, `Permissions`, `TUIOptions`
+  - [ ] Remove complex `Agent` struct if possible
 
 - [ ] Update `internal/config/load.go`
-  - [ ] Remove LSP/MCP loading logic
-  - [ ] Remove project-related loading
-  - [ ] Keep provider loading
-  - [ ] Keep model loading
+  - [ ] Remove LSP/MCP/project loading
+  - [x] Keep provider and model loading
 
 - [ ] Update `internal/config/init.go`
-  - [ ] Update default config for interviews
-  - [ ] Remove LSP/MCP defaults
-  - [ ] Add interview defaults
+  - [ ] Add session defaults
 
 - [ ] Update `internal/config/provider.go`
-  - [ ] Remove `hyper` provider references
-  - [ ] Remove `copilot` provider references (keep generic OAuth)
-  - [ ] Keep standard providers: OpenAI, Anthropic, Google, etc.
+  - [ ] Remove hyper/copilot providers
 
 - [ ] Remove `internal/config/copilot.go`
 - [ ] Remove `internal/config/hyper.go`
@@ -292,8 +209,8 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Provider Configuration
 
-- [ ] Keep `internal/oauth/claude/` (Anthropic OAuth)
-- [ ] Keep `internal/oauth/token.go` (generic OAuth token)
+- [x] Keep `internal/oauth/claude/`
+- [x] Keep `internal/oauth/token.go`
 - [ ] Remove `internal/oauth/copilot/`
 - [ ] Remove `internal/oauth/hyper/`
 
@@ -301,63 +218,41 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ## Phase 6: Tool Cleanup
 
-### Selective Tool Removal
+### Tool Trimming
 
-- [ ] Copy `crush/internal/agent/tools/` → `internal/coach/tools/` (selective)
+- [ ] Copy `crush/internal/agent/tools/` → `internal/agent/tools/` (selective)
 
-- [ ] **KEEP** (copy these):
-  - [ ] `bash.go` - Code execution for interviews
-  - [ ] `edit.go` - Code editing
-  - [ ] `view.go` - File viewing
-  - [ ] `write.go` - File writing
-  - [ ] `grep.go` - Code search
-  - [ ] `ls.go` - File listing
-  - [ ] `glob.go` - File globbing
-  - [ ] `todos.go` - Task tracking
-  - [ ] `tools.go` - Tool registry/helpers
-  - [ ] Template files: `*.md`, `*.tpl` for kept tools
+- [x] **KEEP**:
+  - [x] `bash.go`, `edit.go`, `view.go`, `write.go`, `grep.go`, `ls.go`, `glob.go`, `todos.go`, `tools.go`, template files
 
-- [ ] **DELETE** (don't copy):
-  - [ ] `diagnostics.go` - LSP-specific
-  - [ ] `references.go` - LSP-specific
-  - [ ] `job_kill.go` - Background jobs
-  - [ ] `job_output.go` - Background jobs
-  - [ ] `sourcegraph.go` - External code search
-  - [ ] `agentic_fetch.go` - Too complex
-  - [ ] `agent_tool.go` - Agent-specific
-  - [ ] `agentic_fetch_tool.go` - Agent-specific
-  - [ ] `mcp/` directory - MCP integration
+- [ ] **DELETE**:
+  - [ ] LSP-specific: `diagnostics.go`, `references.go`
+  - [ ] Background jobs: `job_kill.go`, `job_output.go`
+  - [ ] Agent/MCP: `agentic_fetch.go`, `agentic_fetch_tool.go`, `agent_tool.go`, `mcp/`
+  - [ ] `sourcegraph.go`
 
-- [ ] **EVALUATE** (copy but may remove later):
-  - [ ] `download.go` - May be useful for downloading problem files
-  - [ ] `fetch.go` - May be useful for fetching problem context
-  - [ ] `web_search.go` - May be useful if interviews need research
-  - [ ] `web_fetch.go` - May be useful if interviews need research
-  - [ ] `multiedit.go` - May be useful for batch edits
+- [ ] **EVALUATE** (copy, may remove):
+  - [ ] `download.go`, `fetch.go`, `web_search.go`, `web_fetch.go`, `multiedit.go`
 
-- [ ] Update `internal/coach/tools/tools.go`
-  - [ ] Remove references to deleted tools
-  - [ ] Update tool registration
-  - [ ] Update package imports
+- [ ] Update `internal/agent/tools/tools.go`
+  - [ ] Remove deleted tools from registration/imports
+  - [ ] Adjust imports for package move
 
-- [ ] Update all tool files:
-  - [ ] Change package: `tools` → `tools` (keep same)
-  - [ ] Update imports: `crush/internal/session` → `prepf/internal/interview`
-  - [ ] Update references: `session.Service` → `interview.Service`
-  - [ ] Update tool descriptions for interview context
+- [ ] Update tool files:
+  - [ ] Keep package name: `tools`
+  - [ ] Keep references: `session.Service`
+  - [ ] Update tool descriptions/context only as needed
 
 ### Permission Simplification
 
 - [ ] Copy `crush/internal/permission/` → `internal/permission/`
-- [ ] Update `internal/permission/permission.go`
-  - [ ] Simplify permission system (interviews are less risky)
-  - [ ] Remove complex permission dialogs (keep basic tool permissions)
-  - [ ] Update tool whitelist/blacklist for interview context
+- [ ] Update for simpler (session-based) permissions
+- [ ] Keep basic tool whitelisting/blacklisting
 
 ### Shell Package
 
 - [ ] Copy `crush/internal/shell/` → `internal/shell/`
-  - [ ] Keep as-is (needed for code execution)
+  - [ ] Keep as-is
   - [ ] Update package imports if needed
 
 ---
@@ -366,78 +261,45 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### App Structure
 
-- [ ] Copy `crush/internal/app/app.go` → `internal/app/app.go`
-- [ ] Update `App` struct:
-  - [ ] `Sessions` → `Interviews` (type: `interview.Service`)
-  - [ ] `AgentCoordinator` → `CoachCoordinator` (type: `coach.CoachCoordinator`)
-  - [ ] Remove `LSPClients` field
-  - [ ] Keep: `Messages`, `History` (if keeping file history), `Permissions`
+- [x] Copy `crush/internal/app/app.go` → `internal/app/app.go`
+- [x] Update `App` struct as needed
+  - [x] Keep `Sessions`, `AgentCoordinator`, `Messages`, `History`, `Permissions`
+  - [x] Remove `LSPClients`
 
-- [ ] Update `New()` function:
-  - [ ] `session.NewService()` → `interview.NewService()`
-  - [ ] Remove `initLSPClients()` call
-  - [ ] Remove MCP initialization
-  - [ ] `InitCoderAgent()` → `InitInterviewCoach()`
-  - [ ] Update coach initialization
+- [x] Update `New()`
+  - [x] Use `session.NewService()`
+  - [x] Remove any LSP logic
+  - [ ] Remove any MSP logic
+  - [x] Use `InitCoderAgent()` for agent setup
 
-- [ ] Create `InitInterviewCoach()` method:
-  - [ ] Initialize coach coordinator
-  - [ ] Set up interview coach with appropriate prompts
-  - [ ] Configure tools for coach
+- [x] Keep `InitCoderAgent()` or equivalent for agent initialization
 
-- [ ] Remove `internal/app/lsp.go`
-- [ ] Remove `internal/app/lsp_events.go`
+- [x] Remove `internal/app/lsp.go` and `internal/app/lsp_events.go`
 
-- [ ] Update all references throughout app:
-  - [ ] `app.Sessions` → `app.Interviews`
-  - [ ] `app.AgentCoordinator` → `app.CoachCoordinator`
-
-### Message Service
-
-- [ ] Copy `crush/internal/message/` → `internal/message/`
-  - [ ] Update package imports
-  - [ ] Keep structure (messages work the same way)
-  - [ ] Update references: `session.Session` → `interview.Interview` (if any)
-
-### Database Connection
-
-- [ ] Copy `crush/internal/db/connect.go` → `internal/db/connect.go`
-- [ ] Copy `crush/internal/db/db.go` → `internal/db/db.go`
-- [ ] Copy `crush/internal/db/embed.go` → `internal/db/embed.go`
-- [ ] Update migrations path/embedding
-- [ ] Update connection logic for interviews database
+- [ ] Keep references in code to `Sessions`/`AgentCoordinator`
 
 ### Command Updates
 
-- [ ] Update `internal/cli/root.go` (or create new cmd structure)
-  - [ ] Update app name, help text
-  - [ ] Remove: projects command, dirs command
-  - [ ] Keep: version command
-  - [ ] Adapt: login command (remove copilot/hyper, keep OpenAI/Anthropic)
+- [x] Update `internal/cmd/root.go` (or as needed)
+  - [x] App name, help
+  - [ ] Remove projects/dirs
+  - [ ] Keep version
+  - [ ] Adapt login (keep OpenAI/Anthropic)
 
-- [ ] Create/update `internal/cli/run.go` (for non-interactive interview mode)
-  - [ ] Copy from `crush/internal/cmd/run.go`
-  - [ ] Adapt for interview context
-  - [ ] Update to use coach instead of agent
+- [ ] Add/Update `internal/cli/run.go` for non-interactive mode
+  - [ ] Use agent
 
-- [ ] Create/update login command:
-  - [ ] Copy `crush/internal/cmd/login.go` → `internal/cli/login.go`
-  - [ ] Remove copilot/hyper login functions
-  - [ ] Keep claude/anthropic login
-  - [ ] Keep OpenAI API key setup
+- [ ] Add/Update login command as needed
+  - [ ] Remove copilot/hyper logins
+  - [ ] Keep claude/openai
 
-- [ ] Remove commands (don't copy):
-  - [ ] `cmd/projects.go`
-  - [ ] `cmd/dirs.go`
-  - [ ] `cmd/schema.go` (or adapt if needed)
-  - [ ] `cmd/update_providers.go` (or adapt if needed)
+- [ ] Remove: projects.go, dirs.go, schema.go (if not needed), update_providers.go (if not needed)
 
 ### Main Application Entry
 
-- [ ] Update `cmd/prepf/main.go` (or create if needed)
-  - [ ] Initialize app with interview service
-  - [ ] Set up TUI with interview page
-  - [ ] Wire everything together
+- [ ] Update `cmd/prepf/main.go` or create new
+  - [ ] App/session init
+  - [ ] UI setup
 
 ---
 
@@ -445,42 +307,32 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Remove Unused Packages
 
-- [ ] Delete `internal/lsp/` (entire directory)
-- [ ] Delete `internal/projects/` (entire directory)
-- [ ] Delete `internal/skills/` (entire directory)
-- [ ] Remove unused OAuth packages (copilot, hyper)
-- [ ] Remove unused config files
+- [ ] Remove `internal/lsp/`, `internal/projects/`, `internal/skills/`
+- [ ] Remove unused oauth/config files
 
 ### Update Dependencies
 
 - [ ] Review `go.mod`
-  - [ ] Keep: `charm.land/bubbletea/v2`, `charm.land/lipgloss/v2`
-  - [ ] Keep: `charm.land/fantasy` (AI framework)
-  - [ ] Keep: `charm.land/catwalk` (provider management)
-  - [ ] Remove: LSP client libraries (if any)
-  - [ ] Remove: MCP client libraries
+  - [ ] Keep core dependencies: bubbletea, lipgloss, fantasy, catwalk
+  - [ ] Remove LSP/MCP libraries
   - [ ] Update module path if needed
 
 ### Testing
 
-- [ ] Verify UI compiles and runs
-- [ ] Test interview creation
-- [ ] Test coach interaction
-- [ ] Test message persistence
-- [ ] Test tool execution (bash, edit, view, etc.)
-- [ ] Test configuration loading
-- [ ] Test provider authentication (OpenAI, Anthropic)
-- [ ] Verify database migrations work
-- [ ] Test interview listing/selection
-- [ ] Test non-interactive mode (if implemented)
+- [ ] UI runs
+- [ ] Session creation
+- [ ] Agent interaction
+- [ ] Message persistence
+- [ ] Tool execution (bash, edit, etc)
+- [ ] Config loading and authentication works
+- [ ] Migrations work
+- [ ] Session listing/selection
+- [ ] Non-interactive mode works
 
 ### Documentation
 
-- [ ] Update README.md with new architecture
-- [ ] Update DEVELOPMENT.md with migration notes
-- [ ] Document interview-specific configuration
-- [ ] Document coach system
-- [ ] Update API documentation (if any)
+- [ ] Update README.md, DEVELOPMENT.md
+- [ ] Document config, agent system, and API if any
 
 ---
 
@@ -491,27 +343,27 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 - `crush/internal/tui/styles/theme.go` - Core styling system
 - `crush/internal/config/config.go` - Configuration structure
 - `crush/internal/agent/coordinator.go:708-754` - Provider setup (already uses standard providers)
-- `crush/internal/session/session.go` - Session model (adapt to Interview)
+- `crush/internal/session/session.go` - Session model
 - `crush/internal/app/app.go:66-118` - Application initialization
 - `crush/internal/tui/tui.go:688-710` - TUI initialization
 
 ### Important Adaptations
 
 - **Provider Setup**: Already uses standard providers (OpenAI, Anthropic, etc.) - minimal changes needed
-- **Session Creation**: Adapt to Interview creation (remove parent session logic)
-- **Agent Run**: Adapt prompts for interview coaching context
-- **UI Rendering**: Change terminology (Chat → Interview, Session → Interview)
+- **Session Creation**: Remove parent session logic
+- **Agent Run**: Adjust prompt for interview context
+- **UI Rendering**: All wording remains "Chat", "Session" unless needed
 
 ### Migration Order
 
-1. Foundation first (UI/styles/utils) - builds base
-2. Data layer (database/interviews) - defines structure
-3. Coach system - core logic
-4. UI adaptation - user-facing changes
-5. Config cleanup - simplification
-6. Tool cleanup - remove unused
-7. App wiring - connect everything
-8. Testing - verify it works
+1. Foundation (UI/styles/utils)
+2. Data layer (session)
+3. Agent system
+4. UI adaptation
+5. Configuration
+6. Tool cleanup
+7. App wiring
+8. Testing
 
 ---
 

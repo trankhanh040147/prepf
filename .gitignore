@@ -1,41 +1,53 @@
-# Binaries
-prepf
+# Binaries for programs and plugins
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
 
-# Test binary
+# Test binary, built with `go test -c`
 *.test
 
-# Output of the coverage tool
+# Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Dependency directories
-vendor/
+# Dependency directories (remove the comment below to include it)
+# vendor/
 
 # Go workspace file
 go.work
+go.work.sum
 
-# IDE
+# IDE specific files
 .idea/
 .vscode/
 *.swp
 *.swo
-*~
 
-# OS
+# OS specific files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+*.log
 
-# Build artifacts
-dist/
-build/
+# Binary output directory
+/bin/
+/dist/
 
-# Config (user-specific, but keep template)
-# ~/.config/prepf/config.yaml
+# Local environment variables
+.env
+.env.local
 
-# Profile (user-specific)
-# ~/.config/prepf/profile.json
-crush
+**/.crush/**
+
+/crush
+/tmp/
+
+manpages/
+completions/
+!internal/tui/components/completions/
+.prettierignore

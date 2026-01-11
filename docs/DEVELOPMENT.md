@@ -2,7 +2,7 @@
 
 ## Design Principles & Coding Standards
 
-> **Reference:** All design principles, coding standards, and implementation guidelines are defined in [`.cursor/rules/rules.mdc`](../.cursor/rules/rules.mdc).
+> **Reference:** All design principles, coding standards, and implementation guidelines are defined in [`.cursor/rules/rules.mdc`](../.cursor/rules/rules.mdc) and [`AGENTS.md`](../AGENTS.md)
 
 ### How To Apply These Rules
 
@@ -52,6 +52,7 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 
 **Status:** ✅ Complete
 
+
 **Goal:** Establish core infrastructure following project principles (UX First, Action > Theory).
 
 ## What's New
@@ -90,9 +91,6 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 - [x] **Context:** Token limit handling, usage display, history management
 - [x] **Network:** Configurable timeouts, error wrapping, context cancellation
 
-### Storage Layer
-- [x] **User Profile (JSON):** CV path, Experience Level, file-based persistence, safe mutation, index safety
-
 ### Code Quality
 - [x] **Structure:** Small modular files, constants in `[...constants.go]`, isolated packages (AI client, stringutil)
 - [x] **Standards:** `gofmt -s`, `go vet`, `staticcheck`, complexity ≤15, memory safety, `samber/lo` for functional ops
@@ -128,11 +126,8 @@ prepf → Mode Selection → Pre-Mode Instructions → Enter Mode
 ### Mode Selection (Shared)
 
 - [ ] **Mode Selector Component:** Bubbletea list with two options (Mock, Gym)
-- [ ] **Pre-Mode Input:** Text area for user instructions before entering mode
-- [ ] **File Mention (@):** Support `@filepath` syntax to attach CV/resume/context files
-  - Parse `@path/to/file.md` from user input
-  - Read file content and inject into session context
-  - Display attached files in UI
+- [x] **Pre-Mode Input:** Text area for user instructions before entering mode (Use current pre-chat)
+- [x] **File Mention (@):** Support `@filepath` syntax to attach CV/resume/context files (implemented in current base)
 
 ### Mock Mode (The Gauntlet)
 
@@ -172,7 +167,6 @@ Create new templates in `internal/agent/templates/`:
 
 - **Minimal Changes:** This release experiments with capability, not polish
 - **Leverage Existing:** Use existing TUI components (chat, viewport, editor)
-- **File Mention:** Parse `@` syntax in user input, similar to IDE file mentions
 - **Mode State:** Track current mode in session metadata
 
 ## Out of Scope (Future Releases)
@@ -188,6 +182,8 @@ Create new templates in `internal/agent/templates/`:
 # v0.1.2 - Enhanced Feedback
 
 **Status:** Planned
+
+- Tools & Skills: Implement Tools and Skills to grant LLM more capabilities
 
 - Transcript saving (JSON/Markdown export)
 - Level scaling selector (Junior → Senior → Principal)

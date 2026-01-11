@@ -1,0 +1,1 @@
+../sota-codex/stacks/go-cli/AGENTS.md

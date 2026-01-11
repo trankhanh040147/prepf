@@ -102,7 +102,7 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 ### CI/CD 
 - [x] GitHub Actions workflow with testing, linting, vulnerability scanning, and multi-platform builds
 
-# v0.1.1 - Dual Mode Release (Mock & Gym)
+# v0.2.0 - Dual Mode Release (Mock & Gym)
 
 **Status:** In Progress
 
@@ -179,7 +179,7 @@ Create new templates in `internal/agent/templates/`:
 
 ---
 
-# v0.1.2 - Enhanced Feedback
+# v0.3.0 - Enhanced Feedback
 
 **Status:** Planned
 

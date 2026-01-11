@@ -104,21 +104,91 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 ### CI/CD 
 - [x] GitHub Actions workflow with testing, linting, vulnerability scanning, and multi-platform builds
 
-# v0.1.1 - Mock Module (The Gauntlet)
+# v0.1.1 - Dual Mode Release (Mock & Gym)
 
-**Status:** Ideas, not planned yet.
-// TODO: Help me plan details for this phase
+**Status:** In Progress
 
-**Goal:** MVP of "The Gauntlet" - focus on the _Roast_.
-- [ ] **Context Loader:** CV/Resume reader (Markdown/PDF-text), tech stack selector (Bubbletea list)
-- [ ] **Interview Loop (TUI):** Split view (AI Question top, User Input bottom), "I don't know" shortcut (Tab)
-- [ ] **Roast Renderer:** Markdown renderer (Glamour) for harsh feedback, save transcript
-- [ ] **System Prompt v1:** "Senior Architect" persona that penalizes fluff
+**Goal:** Experimental release to validate the tool's capability. Both modes are MVP-level to gather feedback before enhancing in future releases.
+
+## User Flow
+
+```
+prepf → Mode Selection → Pre-Mode Instructions → Enter Mode
+        ├── Mock (The Gauntlet)
+        └── Gym (Training Mode)
+```
+
+1. User runs `prepf`
+2. Mode selection dialog (Bubbletea list): **Mock** or **Gym**
+3. Pre-mode instruction input: User provides context/goals before entering
+4. Mode-specific session begins
+
+## Features
+
+### Mode Selection (Shared)
+
+- [ ] **Mode Selector Component:** Bubbletea list with two options (Mock, Gym)
+- [ ] **Pre-Mode Input:** Text area for user instructions before entering mode
+- [ ] **File Mention (@):** Support `@filepath` syntax to attach CV/resume/context files
+  - Parse `@path/to/file.md` from user input
+  - Read file content and inject into session context
+  - Display attached files in UI
+
+### Mock Mode (The Gauntlet)
+
+- [ ] **System Prompt:** `mock.md.tpl` - Senior Architect persona
+  - Penalizes fluff and vague answers
+  - Tailors questions based on CV/experience gaps
+  - Delivers "The Roast" with actionable feedback
+- [ ] **Session Flow:**
+  - AI asks technical questions based on context
+  - User responds (supports "I don't know" shortcut)
+  - AI provides harsh but constructive feedback
+- [ ] **Roast Renderer:** Glamour markdown for feedback display
+
+### Gym Mode (Training)
+
+- [ ] **System Prompt:** `gym.md.tpl` - Drill Instructor persona
+  - Generates targeted practice questions
+  - Identifies guessing vs. actual knowledge
+  - Corrects misconceptions in real-time
+- [ ] **Session Flow:**
+  - User chooses topic or lets AI suggest
+  - AI generates random drill questions
+  - Interactive Q&A with immediate feedback
+- [ ] **Topic Selector:** Optional topic input or "surprise me"
+
+## Prompt Templates
+
+Create new templates in `internal/agent/templates/`:
+
+| Template | Purpose |
+|----------|---------|
+| `mock.md.tpl` | The Gauntlet - Mock interview system prompt |
+| `gym.md.tpl` | The Gym - Training mode system prompt |
+| `mode_select.md` | Mode selection instructions |
+
+## Implementation Notes
+
+- **Minimal Changes:** This release experiments with capability, not polish
+- **Leverage Existing:** Use existing TUI components (chat, viewport, editor)
+- **File Mention:** Parse `@` syntax in user input, similar to IDE file mentions
+- **Mode State:** Track current mode in session metadata
+
+## Out of Scope (Future Releases)
+
+- PDF parsing (use markdown/text CV for now)
+- SRS (Spaced Repetition) integration
+- Transcript saving
+- Level scaling (Junior → Principal)
+- Cross-domain topic suggestions
 
 ---
 
-# v0.1.2 - Gym Mode
+# v0.1.2 - Enhanced Feedback
 
-**Status:** In planning
+**Status:** Planned
 
-- User chooses topic → AI generates random topics → interactive learning session
+- Transcript saving (JSON/Markdown export)
+- Level scaling selector (Junior → Senior → Principal)
+- Session history and progress tracking

@@ -1,6 +1,6 @@
 # Go parameters
 BINARY_NAME=prepf
-MAIN_PACKAGE=./cmd/prepf
+MAIN_PACKAGE=.
 GO=go
 
 # Build info

@@ -16,20 +16,20 @@ import (
 	"charm.land/bubbles/v2/textarea"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/charmbracelet/crush/internal/app"
-	"github.com/charmbracelet/crush/internal/filetracker"
-	"github.com/charmbracelet/crush/internal/fsext"
-	"github.com/charmbracelet/crush/internal/message"
-	"github.com/charmbracelet/crush/internal/session"
-	"github.com/charmbracelet/crush/internal/tui/components/chat"
-	"github.com/charmbracelet/crush/internal/tui/components/completions"
-	"github.com/charmbracelet/crush/internal/tui/components/core/layout"
-	"github.com/charmbracelet/crush/internal/tui/components/dialogs"
-	"github.com/charmbracelet/crush/internal/tui/components/dialogs/commands"
-	"github.com/charmbracelet/crush/internal/tui/components/dialogs/filepicker"
-	"github.com/charmbracelet/crush/internal/tui/components/dialogs/quit"
-	"github.com/charmbracelet/crush/internal/tui/styles"
-	"github.com/charmbracelet/crush/internal/tui/util"
+	"github.com/trankhanh040147/prepf/internal/app"
+	"github.com/trankhanh040147/prepf/internal/filetracker"
+	"github.com/trankhanh040147/prepf/internal/fsext"
+	"github.com/trankhanh040147/prepf/internal/message"
+	"github.com/trankhanh040147/prepf/internal/session"
+	"github.com/trankhanh040147/prepf/internal/tui/components/chat"
+	"github.com/trankhanh040147/prepf/internal/tui/components/completions"
+	"github.com/trankhanh040147/prepf/internal/tui/components/core/layout"
+	"github.com/trankhanh040147/prepf/internal/tui/components/dialogs"
+	"github.com/trankhanh040147/prepf/internal/tui/components/dialogs/commands"
+	"github.com/trankhanh040147/prepf/internal/tui/components/dialogs/filepicker"
+	"github.com/trankhanh040147/prepf/internal/tui/components/dialogs/quit"
+	"github.com/trankhanh040147/prepf/internal/tui/styles"
+	"github.com/trankhanh040147/prepf/internal/tui/util"
 	"github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/editor"
 )
@@ -103,7 +103,7 @@ func (m *editorCmp) openEditor(value string) tea.Cmd {
 		return util.ReportError(err)
 	}
 	cmd, err := editor.Command(
-		"crush",
+		"prepf",
 		tmpfile.Name(),
 		editor.AtPosition(
 			m.textarea.Line()+1,

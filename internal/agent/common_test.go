@@ -15,17 +15,17 @@ import (
 	"charm.land/fantasy/providers/openrouter"
 	"charm.land/x/vcr"
 	"github.com/charmbracelet/catwalk/pkg/catwalk"
-	"github.com/charmbracelet/crush/internal/agent/prompt"
-	"github.com/charmbracelet/crush/internal/agent/tools"
-	"github.com/charmbracelet/crush/internal/config"
-	"github.com/charmbracelet/crush/internal/csync"
-	"github.com/charmbracelet/crush/internal/db"
-	"github.com/charmbracelet/crush/internal/history"
-	"github.com/charmbracelet/crush/internal/lsp"
-	"github.com/charmbracelet/crush/internal/message"
-	"github.com/charmbracelet/crush/internal/permission"
-	"github.com/charmbracelet/crush/internal/session"
 	"github.com/stretchr/testify/require"
+	"github.com/trankhanh040147/prepf/internal/agent/prompt"
+	"github.com/trankhanh040147/prepf/internal/agent/tools"
+	"github.com/trankhanh040147/prepf/internal/config"
+	"github.com/trankhanh040147/prepf/internal/csync"
+	"github.com/trankhanh040147/prepf/internal/db"
+	"github.com/trankhanh040147/prepf/internal/history"
+	"github.com/trankhanh040147/prepf/internal/lsp"
+	"github.com/trankhanh040147/prepf/internal/message"
+	"github.com/trankhanh040147/prepf/internal/permission"
+	"github.com/trankhanh040147/prepf/internal/session"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -172,7 +172,7 @@ func coderAgent(r *vcr.Recorder, env fakeEnv, large, small fantasy.LanguageModel
 	}
 
 	// NOTE(@andreynering): Set a fixed config to ensure cassettes match
-	// independently of user config on `$HOME/.config/crush/crush.json`.
+	// independently of user config on `$HOME/.config/prepf/prepf.json`.
 	cfg.Options.Attribution = &config.Attribution{
 		TrailerStyle:  "co-authored-by",
 		GeneratedWith: true,

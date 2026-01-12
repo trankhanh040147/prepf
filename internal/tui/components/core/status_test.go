@@ -5,7 +5,7 @@ import (
 	"image/color"
 	"testing"
 
-	"github.com/charmbracelet/crush/internal/tui/components/core"
+	"github.com/trankhanh040147/prepf/internal/tui/components/core"
 	"github.com/charmbracelet/x/exp/golden"
 )
 

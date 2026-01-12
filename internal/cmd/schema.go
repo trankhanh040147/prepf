@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/charmbracelet/crush/internal/config"
+	"github.com/trankhanh040147/prepf/internal/config"
 	"github.com/invopop/jsonschema"
 	"github.com/spf13/cobra"
 )

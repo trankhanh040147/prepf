@@ -7,7 +7,7 @@ import (
 	"os"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/charmbracelet/crush/internal/tui/components/anim"
+	"github.com/trankhanh040147/prepf/internal/tui/components/anim"
 	"github.com/charmbracelet/x/ansi"
 )
 

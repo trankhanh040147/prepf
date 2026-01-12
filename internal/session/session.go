@@ -8,10 +8,10 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/charmbracelet/crush/internal/db"
-	"github.com/charmbracelet/crush/internal/event"
-	"github.com/charmbracelet/crush/internal/pubsub"
 	"github.com/google/uuid"
+	"github.com/trankhanh040147/prepf/internal/db"
+	"github.com/trankhanh040147/prepf/internal/event"
+	"github.com/trankhanh040147/prepf/internal/pubsub"
 )
 
 type TodoStatus string
@@ -38,6 +38,7 @@ type Session struct {
 	SummaryMessageID string
 	Cost             float64
 	Todos            []Todo
+	Mode             string
 	CreatedAt        int64
 	UpdatedAt        int64
 }
@@ -45,6 +46,7 @@ type Session struct {
 type Service interface {
 	pubsub.Subscriber[Session]
 	Create(ctx context.Context, title string) (Session, error)
+	CreateWithMode(ctx context.Context, title, mode string) (Session, error)
 	CreateTitleSession(ctx context.Context, parentSessionID string) (Session, error)
 	CreateTaskSession(ctx context.Context, toolCallID, parentSessionID, title string) (Session, error)
 	Get(ctx context.Context, id string) (Session, error)
@@ -65,9 +67,17 @@ type service struct {
 }
 
 func (s *service) Create(ctx context.Context, title string) (Session, error) {
+	return s.CreateWithMode(ctx, title, "")
+}
+
+func (s *service) CreateWithMode(ctx context.Context, title, mode string) (Session, error) {
 	dbSession, err := s.q.CreateSession(ctx, db.CreateSessionParams{
 		ID:    uuid.New().String(),
 		Title: title,
+		Mode: sql.NullString{
+			String: mode,
+			Valid:  mode != "",
+		},
 	})
 	if err != nil {
 		return Session{}, err
@@ -83,6 +93,7 @@ func (s *service) CreateTaskSession(ctx context.Context, toolCallID, parentSessi
 		ID:              toolCallID,
 		ParentSessionID: sql.NullString{String: parentSessionID, Valid: true},
 		Title:           title,
+		Mode:            sql.NullString{Valid: false},
 	})
 	if err != nil {
 		return Session{}, err
@@ -97,6 +108,7 @@ func (s *service) CreateTitleSession(ctx context.Context, parentSessionID string
 		ID:              "title-" + parentSessionID,
 		ParentSessionID: sql.NullString{String: parentSessionID, Valid: true},
 		Title:           "Generate a title",
+		Mode:            sql.NullString{Valid: false},
 	})
 	if err != nil {
 		return Session{}, err
@@ -148,6 +160,10 @@ func (s *service) Save(ctx context.Context, session Session) (Session, error) {
 			String: todosJSON,
 			Valid:  todosJSON != "",
 		},
+		Mode: sql.NullString{
+			String: session.Mode,
+			Valid:  session.Mode != "",
+		},
 	})
 	if err != nil {
 		return Session{}, err
@@ -196,6 +212,7 @@ func (s service) fromDBItem(item db.Session) Session {
 		SummaryMessageID: item.SummaryMessageID.String,
 		Cost:             item.Cost,
 		Todos:            todos,
+		Mode:             item.Mode.String,
 		CreatedAt:        item.CreatedAt,
 		UpdatedAt:        item.UpdatedAt,
 	}

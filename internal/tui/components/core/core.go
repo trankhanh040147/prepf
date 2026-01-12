@@ -8,9 +8,9 @@ import (
 	"charm.land/bubbles/v2/key"
 	"charm.land/lipgloss/v2"
 	"github.com/alecthomas/chroma/v2"
-	"github.com/charmbracelet/crush/internal/tui/exp/diffview"
-	"github.com/charmbracelet/crush/internal/tui/styles"
 	"github.com/charmbracelet/x/ansi"
+	"github.com/trankhanh040147/prepf/internal/tui/exp/diffview"
+	"github.com/trankhanh040147/prepf/internal/tui/styles"
 )
 
 type KeyMapHelp interface {
@@ -201,7 +201,7 @@ func SelectableButtonsVertical(buttons []ButtonOpts, spacing int) string {
 func DiffFormatter() *diffview.DiffView {
 	t := styles.CurrentTheme()
 	formatDiff := diffview.New()
-	style := chroma.MustNewStyle("crush", styles.GetChromaTheme())
+	style := chroma.MustNewStyle("prepf", styles.GetChromaTheme())
 	diff := formatDiff.ChromaStyle(style).Style(t.S().Diff).TabWidth(4)
 	return diff
 }

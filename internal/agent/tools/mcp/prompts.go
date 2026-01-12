@@ -5,7 +5,7 @@ import (
 	"iter"
 	"log/slog"
 
-	"github.com/charmbracelet/crush/internal/csync"
+	"github.com/trankhanh040147/prepf/internal/csync"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 

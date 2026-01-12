@@ -14,11 +14,11 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/charmbracelet/crush/internal/agent/tools/mcp"
-	"github.com/charmbracelet/crush/internal/config"
-	"github.com/charmbracelet/crush/internal/home"
-	"github.com/charmbracelet/crush/internal/tui/components/chat"
-	"github.com/charmbracelet/crush/internal/tui/util"
+	"github.com/trankhanh040147/prepf/internal/agent/tools/mcp"
+	"github.com/trankhanh040147/prepf/internal/config"
+	"github.com/trankhanh040147/prepf/internal/home"
+	"github.com/trankhanh040147/prepf/internal/tui/components/chat"
+	"github.com/trankhanh040147/prepf/internal/tui/util"
 )
 
 type CommandType uint
@@ -102,7 +102,7 @@ func buildCommandSources(cfg *config.Config) []commandSource {
 	// Home directory
 	if home := home.Dir(); home != "" {
 		sources = append(sources, commandSource{
-			path:   filepath.Join(home, ".crush", "commands"),
+			path:   filepath.Join(home, ".prepf", "commands"),
 			prefix: userCommandPrefix,
 		})
 	}
@@ -124,7 +124,7 @@ func getXDGCommandsDir() string {
 		}
 	}
 	if xdgHome != "" {
-		return filepath.Join(xdgHome, "crush", "commands")
+		return filepath.Join(xdgHome, "prepf", "commands")
 	}
 	return ""
 }

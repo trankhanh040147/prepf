@@ -17,9 +17,9 @@ import (
 
 	"github.com/charmbracelet/catwalk/pkg/catwalk"
 	"github.com/charmbracelet/catwalk/pkg/embedded"
-	"github.com/charmbracelet/crush/internal/agent/hyper"
-	"github.com/charmbracelet/crush/internal/csync"
-	"github.com/charmbracelet/crush/internal/home"
+	"github.com/trankhanh040147/prepf/internal/agent/hyper"
+	"github.com/trankhanh040147/prepf/internal/csync"
+	"github.com/trankhanh040147/prepf/internal/home"
 	"github.com/charmbracelet/x/etag"
 )
 
@@ -41,8 +41,8 @@ func cachePathFor(name string) string {
 	}
 
 	// return the path to the main data directory
-	// for windows, it should be in `%LOCALAPPDATA%/crush/`
-	// for linux and macOS, it should be in `$HOME/.local/share/crush/`
+	// for windows, it should be in `%LOCALAPPDATA%/prepf/`
+	// for linux and macOS, it should be in `$HOME/.local/share/prepf/`
 	if runtime.GOOS == "windows" {
 		localAppData := os.Getenv("LOCALAPPDATA")
 		if localAppData == "" {
@@ -158,7 +158,7 @@ func Providers(cfg *Config) ([]catwalk.Provider, error) {
 			items, err := catwalkSyncer.Get(ctx)
 			if err != nil {
 				catwalkURL := fmt.Sprintf("%s/v2/providers", cmp.Or(os.Getenv("CATWALK_URL"), defaultCatwalkURL))
-				errs = append(errs, fmt.Errorf("Crush was unable to fetch an updated list of providers from %s. Consider setting CRUSH_DISABLE_PROVIDER_AUTO_UPDATE=1 to use the embedded providers bundled at the time of this Crush release. You can also update providers manually. For more info see crush update-providers --help.\n\nCause: %w", catwalkURL, providerErr)) //nolint:staticcheck
+				errs = append(errs, fmt.Errorf("Crush was unable to fetch an updated list of providers from %s. Consider setting CRUSH_DISABLE_PROVIDER_AUTO_UPDATE=1 to use the embedded providers bundled at the time of this Prepf release. You can also update providers manually. For more info see prepf update-providers --help.\n\nCause: %w", catwalkURL, providerErr)) //nolint:staticcheck
 				return
 			}
 			providers.Append(items...)

@@ -14,7 +14,7 @@ func TestRegisterAndList(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", tmpDir)
 
 	// Test registering a project
-	err := Register("/home/user/project1", "/home/user/project1/.crush")
+	err := Register("/home/user/project1", "/home/user/project1/.prepf")
 	if err != nil {
 		t.Fatalf("Register failed: %v", err)
 	}
@@ -33,12 +33,12 @@ func TestRegisterAndList(t *testing.T) {
 		t.Errorf("Expected path /home/user/project1, got %s", projects[0].Path)
 	}
 
-	if projects[0].DataDir != "/home/user/project1/.crush" {
-		t.Errorf("Expected data_dir /home/user/project1/.crush, got %s", projects[0].DataDir)
+	if projects[0].DataDir != "/home/user/project1/.prepf" {
+		t.Errorf("Expected data_dir /home/user/project1/.prepf, got %s", projects[0].DataDir)
 	}
 
 	// Register another project
-	err = Register("/home/user/project2", "/home/user/project2/.crush")
+	err = Register("/home/user/project2", "/home/user/project2/.prepf")
 	if err != nil {
 		t.Fatalf("Register failed: %v", err)
 	}
@@ -63,7 +63,7 @@ func TestRegisterUpdatesExisting(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", tmpDir)
 
 	// Register a project
-	err := Register("/home/user/project1", "/home/user/project1/.crush")
+	err := Register("/home/user/project1", "/home/user/project1/.prepf")
 	if err != nil {
 		t.Fatalf("Register failed: %v", err)
 	}
@@ -74,7 +74,7 @@ func TestRegisterUpdatesExisting(t *testing.T) {
 	// Wait a bit and re-register
 	time.Sleep(10 * time.Millisecond)
 
-	err = Register("/home/user/project1", "/home/user/project1/.crush-new")
+	err = Register("/home/user/project1", "/home/user/project1/.prepf-new")
 	if err != nil {
 		t.Fatalf("Register failed: %v", err)
 	}
@@ -85,7 +85,7 @@ func TestRegisterUpdatesExisting(t *testing.T) {
 		t.Fatalf("Expected 1 project after update, got %d", len(projects))
 	}
 
-	if projects[0].DataDir != "/home/user/project1/.crush-new" {
+	if projects[0].DataDir != "/home/user/project1/.prepf-new" {
 		t.Errorf("Expected updated data_dir, got %s", projects[0].DataDir)
 	}
 
@@ -113,7 +113,7 @@ func TestProjectsFilePath(t *testing.T) {
 	tmpDir := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", tmpDir)
 
-	expected := filepath.Join(tmpDir, "crush", "projects.json")
+	expected := filepath.Join(tmpDir, "prepf", "projects.json")
 	actual := projectsFilePath()
 
 	if actual != expected {
@@ -125,9 +125,9 @@ func TestRegisterWithParentDataDir(t *testing.T) {
 	tmpDir := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", tmpDir)
 
-	// Register a project where .crush is in a parent directory.
-	// e.g., working in /home/user/monorepo/packages/app but .crush is at /home/user/monorepo/.crush
-	err := Register("/home/user/monorepo/packages/app", "/home/user/monorepo/.crush")
+	// Register a project where .prepf is in a parent directory.
+	// e.g., working in /home/user/monorepo/packages/app but .prepf is at /home/user/monorepo/.prepf
+	err := Register("/home/user/monorepo/packages/app", "/home/user/monorepo/.prepf")
 	if err != nil {
 		t.Fatalf("Register failed: %v", err)
 	}
@@ -145,8 +145,8 @@ func TestRegisterWithParentDataDir(t *testing.T) {
 		t.Errorf("Expected path /home/user/monorepo/packages/app, got %s", projects[0].Path)
 	}
 
-	if projects[0].DataDir != "/home/user/monorepo/.crush" {
-		t.Errorf("Expected data_dir /home/user/monorepo/.crush, got %s", projects[0].DataDir)
+	if projects[0].DataDir != "/home/user/monorepo/.prepf" {
+		t.Errorf("Expected data_dir /home/user/monorepo/.prepf, got %s", projects[0].DataDir)
 	}
 }
 
@@ -154,9 +154,9 @@ func TestRegisterWithExternalDataDir(t *testing.T) {
 	tmpDir := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", tmpDir)
 
-	// Register a project where .crush is in a completely different location.
-	// e.g., project at /home/user/project but data stored at /var/data/crush/myproject
-	err := Register("/home/user/project", "/var/data/crush/myproject")
+	// Register a project where .prepf is in a completely different location.
+	// e.g., project at /home/user/project but data stored at /var/data/prepf/myproject
+	err := Register("/home/user/project", "/var/data/prepf/myproject")
 	if err != nil {
 		t.Fatalf("Register failed: %v", err)
 	}
@@ -174,7 +174,7 @@ func TestRegisterWithExternalDataDir(t *testing.T) {
 		t.Errorf("Expected path /home/user/project, got %s", projects[0].Path)
 	}
 
-	if projects[0].DataDir != "/var/data/crush/myproject" {
-		t.Errorf("Expected data_dir /var/data/crush/myproject, got %s", projects[0].DataDir)
+	if projects[0].DataDir != "/var/data/prepf/myproject" {
+		t.Errorf("Expected data_dir /var/data/prepf/myproject, got %s", projects[0].DataDir)
 	}
 }

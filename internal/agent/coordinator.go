@@ -17,18 +17,18 @@ import (
 
 	"charm.land/fantasy"
 	"github.com/charmbracelet/catwalk/pkg/catwalk"
-	"github.com/charmbracelet/crush/internal/agent/hyper"
-	"github.com/charmbracelet/crush/internal/agent/prompt"
-	"github.com/charmbracelet/crush/internal/agent/tools"
-	"github.com/charmbracelet/crush/internal/config"
-	"github.com/charmbracelet/crush/internal/csync"
-	"github.com/charmbracelet/crush/internal/history"
-	"github.com/charmbracelet/crush/internal/log"
-	"github.com/charmbracelet/crush/internal/lsp"
-	"github.com/charmbracelet/crush/internal/message"
-	"github.com/charmbracelet/crush/internal/oauth/copilot"
-	"github.com/charmbracelet/crush/internal/permission"
-	"github.com/charmbracelet/crush/internal/session"
+	"github.com/trankhanh040147/prepf/internal/agent/hyper"
+	"github.com/trankhanh040147/prepf/internal/agent/prompt"
+	"github.com/trankhanh040147/prepf/internal/agent/tools"
+	"github.com/trankhanh040147/prepf/internal/config"
+	"github.com/trankhanh040147/prepf/internal/csync"
+	"github.com/trankhanh040147/prepf/internal/history"
+	"github.com/trankhanh040147/prepf/internal/log"
+	"github.com/trankhanh040147/prepf/internal/lsp"
+	"github.com/trankhanh040147/prepf/internal/message"
+	"github.com/trankhanh040147/prepf/internal/oauth/copilot"
+	"github.com/trankhanh040147/prepf/internal/permission"
+	"github.com/trankhanh040147/prepf/internal/session"
 	"golang.org/x/sync/errgroup"
 
 	"charm.land/fantasy/providers/anthropic"
@@ -111,13 +111,75 @@ func NewCoordinator(
 	return c, nil
 }
 
+func (c *coordinator) getPromptForMode(mode string) (*prompt.Prompt, error) {
+	var p *prompt.Prompt
+	var err error
+	switch mode {
+	case "mock":
+		p, err = mockPrompt(prompt.WithWorkingDir(c.cfg.WorkingDir()))
+	case "gym":
+		p, err = gymPrompt(prompt.WithWorkingDir(c.cfg.WorkingDir()))
+	default:
+		p, err = coderPrompt(prompt.WithWorkingDir(c.cfg.WorkingDir()))
+	}
+	return p, err
+}
+
+func (c *coordinator) ensureAgentForMode(ctx context.Context, mode string) error {
+	if mode == "" {
+		mode = "coder"
+	}
+	agentKey := "coder:" + mode
+	if _, exists := c.agents[agentKey]; exists {
+		return nil
+	}
+
+	agentCfg, ok := c.cfg.Agents[config.AgentCoder]
+	if !ok {
+		return errors.New("coder agent not configured")
+	}
+
+	p, err := c.getPromptForMode(mode)
+	if err != nil {
+		return err
+	}
+
+	agent, err := c.buildAgent(ctx, p, agentCfg, false)
+	if err != nil {
+		return err
+	}
+	c.agents[agentKey] = agent
+	return nil
+}
+
+func (c *coordinator) getAgentForMode(mode string) SessionAgent {
+	if mode == "" {
+		return c.currentAgent
+	}
+	agentKey := "coder:" + mode
+	if agent, exists := c.agents[agentKey]; exists {
+		return agent
+	}
+	return c.currentAgent
+}
+
 // Run implements Coordinator.
 func (c *coordinator) Run(ctx context.Context, sessionID string, prompt string, attachments ...message.Attachment) (*fantasy.AgentResult, error) {
 	if err := c.readyWg.Wait(); err != nil {
 		return nil, err
 	}
 
-	model := c.currentAgent.Model()
+	sess, err := c.sessions.Get(ctx, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := c.ensureAgentForMode(ctx, sess.Mode); err != nil {
+		return nil, err
+	}
+
+	agent := c.getAgentForMode(sess.Mode)
+	model := agent.Model()
 	maxTokens := model.CatwalkCfg.DefaultMaxTokens
 	if model.ModelCfg.MaxTokens != 0 {
 		maxTokens = model.ModelCfg.MaxTokens
@@ -149,7 +211,7 @@ func (c *coordinator) Run(ctx context.Context, sessionID string, prompt string, 
 	}
 
 	run := func() (*fantasy.AgentResult, error) {
-		return c.currentAgent.Run(ctx, SessionAgentCall{
+		return agent.Run(ctx, SessionAgentCall{
 			SessionID:        sessionID,
 			Prompt:           prompt,
 			Attachments:      attachments,

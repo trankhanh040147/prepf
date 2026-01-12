@@ -7,18 +7,18 @@ import (
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"github.com/atotto/clipboard"
-	"github.com/charmbracelet/crush/internal/agent"
-	"github.com/charmbracelet/crush/internal/agent/tools"
-	"github.com/charmbracelet/crush/internal/app"
-	"github.com/charmbracelet/crush/internal/message"
-	"github.com/charmbracelet/crush/internal/permission"
-	"github.com/charmbracelet/crush/internal/pubsub"
-	"github.com/charmbracelet/crush/internal/session"
-	"github.com/charmbracelet/crush/internal/tui/components/chat/messages"
-	"github.com/charmbracelet/crush/internal/tui/components/core/layout"
-	"github.com/charmbracelet/crush/internal/tui/exp/list"
-	"github.com/charmbracelet/crush/internal/tui/styles"
-	"github.com/charmbracelet/crush/internal/tui/util"
+	"github.com/trankhanh040147/prepf/internal/agent"
+	"github.com/trankhanh040147/prepf/internal/agent/tools"
+	"github.com/trankhanh040147/prepf/internal/app"
+	"github.com/trankhanh040147/prepf/internal/message"
+	"github.com/trankhanh040147/prepf/internal/permission"
+	"github.com/trankhanh040147/prepf/internal/pubsub"
+	"github.com/trankhanh040147/prepf/internal/session"
+	"github.com/trankhanh040147/prepf/internal/tui/components/chat/messages"
+	"github.com/trankhanh040147/prepf/internal/tui/components/core/layout"
+	"github.com/trankhanh040147/prepf/internal/tui/exp/list"
+	"github.com/trankhanh040147/prepf/internal/tui/styles"
+	"github.com/trankhanh040147/prepf/internal/tui/util"
 )
 
 type SendMsg struct {
@@ -29,6 +29,12 @@ type SendMsg struct {
 type SessionSelectedMsg = session.Session
 
 type SessionClearedMsg struct{}
+
+type SessionCreatedWithModeMsg struct {
+	Session    session.Session
+	Text       string
+	Attachments []message.Attachment
+}
 
 type SelectionCopyMsg struct {
 	clickCount   int

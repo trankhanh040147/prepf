@@ -1,4 +1,4 @@
-module github.com/charmbracelet/crush
+module github.com/trankhanh040147/prepf
 
 go 1.25.5
 

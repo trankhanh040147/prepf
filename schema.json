@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/charmbracelet/crush/internal/config/config",
+  "$id": "https://github.com/trankhanh040147/prepf/internal/config/config",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Attribution": {
@@ -22,7 +22,7 @@
         },
         "generated_with": {
           "type": "boolean",
-          "description": "Add Generated with Crush line to commit messages and issues and PRs",
+          "description": "Add Generated with Prepf line to commit messages and issues and PRs",
           "default": true
         }
       },
@@ -361,7 +361,7 @@
             "type": "string",
             "examples": [
               ".cursorrules",
-              "CRUSH.md"
+              "PREPF.md"
             ]
           },
           "type": "array",
@@ -371,7 +371,7 @@
           "items": {
             "type": "string",
             "examples": [
-              "~/.config/crush/skills",
+              "~/.config/prepf/skills",
               "./skills"
             ]
           },
@@ -400,9 +400,9 @@
         "data_directory": {
           "type": "string",
           "description": "Directory for storing application data (relative to working directory)",
-          "default": ".crush",
+          "default": ".prepf",
           "examples": [
-            ".crush"
+            ".prepf"
           ]
         },
         "disabled_tools": {
@@ -436,7 +436,7 @@
           "default": "AGENTS.md",
           "examples": [
             "AGENTS.md",
-            "CRUSH.md",
+            "PREPF.md",
             "CLAUDE.md",
             "docs/LLMs.md"
           ]

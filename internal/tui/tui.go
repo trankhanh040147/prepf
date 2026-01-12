@@ -12,30 +12,30 @@ import (
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/charmbracelet/crush/internal/agent/tools/mcp"
-	"github.com/charmbracelet/crush/internal/app"
-	"github.com/charmbracelet/crush/internal/config"
-	"github.com/charmbracelet/crush/internal/event"
-	"github.com/charmbracelet/crush/internal/permission"
-	"github.com/charmbracelet/crush/internal/pubsub"
-	"github.com/charmbracelet/crush/internal/stringext"
-	cmpChat "github.com/charmbracelet/crush/internal/tui/components/chat"
-	"github.com/charmbracelet/crush/internal/tui/components/chat/splash"
-	"github.com/charmbracelet/crush/internal/tui/components/completions"
-	"github.com/charmbracelet/crush/internal/tui/components/core"
-	"github.com/charmbracelet/crush/internal/tui/components/core/layout"
-	"github.com/charmbracelet/crush/internal/tui/components/core/status"
-	"github.com/charmbracelet/crush/internal/tui/components/dialogs"
-	"github.com/charmbracelet/crush/internal/tui/components/dialogs/commands"
-	"github.com/charmbracelet/crush/internal/tui/components/dialogs/filepicker"
-	"github.com/charmbracelet/crush/internal/tui/components/dialogs/models"
-	"github.com/charmbracelet/crush/internal/tui/components/dialogs/permissions"
-	"github.com/charmbracelet/crush/internal/tui/components/dialogs/quit"
-	"github.com/charmbracelet/crush/internal/tui/components/dialogs/sessions"
-	"github.com/charmbracelet/crush/internal/tui/page"
-	"github.com/charmbracelet/crush/internal/tui/page/chat"
-	"github.com/charmbracelet/crush/internal/tui/styles"
-	"github.com/charmbracelet/crush/internal/tui/util"
+	"github.com/trankhanh040147/prepf/internal/agent/tools/mcp"
+	"github.com/trankhanh040147/prepf/internal/app"
+	"github.com/trankhanh040147/prepf/internal/config"
+	"github.com/trankhanh040147/prepf/internal/event"
+	"github.com/trankhanh040147/prepf/internal/permission"
+	"github.com/trankhanh040147/prepf/internal/pubsub"
+	"github.com/trankhanh040147/prepf/internal/stringext"
+	cmpChat "github.com/trankhanh040147/prepf/internal/tui/components/chat"
+	"github.com/trankhanh040147/prepf/internal/tui/components/chat/splash"
+	"github.com/trankhanh040147/prepf/internal/tui/components/completions"
+	"github.com/trankhanh040147/prepf/internal/tui/components/core"
+	"github.com/trankhanh040147/prepf/internal/tui/components/core/layout"
+	"github.com/trankhanh040147/prepf/internal/tui/components/core/status"
+	"github.com/trankhanh040147/prepf/internal/tui/components/dialogs"
+	"github.com/trankhanh040147/prepf/internal/tui/components/dialogs/commands"
+	"github.com/trankhanh040147/prepf/internal/tui/components/dialogs/filepicker"
+	"github.com/trankhanh040147/prepf/internal/tui/components/dialogs/models"
+	"github.com/trankhanh040147/prepf/internal/tui/components/dialogs/permissions"
+	"github.com/trankhanh040147/prepf/internal/tui/components/dialogs/quit"
+	"github.com/trankhanh040147/prepf/internal/tui/components/dialogs/sessions"
+	"github.com/trankhanh040147/prepf/internal/tui/page"
+	"github.com/trankhanh040147/prepf/internal/tui/page/chat"
+	"github.com/trankhanh040147/prepf/internal/tui/styles"
+	"github.com/trankhanh040147/prepf/internal/tui/util"
 	"golang.org/x/mod/semver"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -387,9 +387,9 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Update Available
 	case pubsub.UpdateAvailableMsg:
 		// Show update notification in status bar
-		statusMsg := fmt.Sprintf("Crush update available: v%s → v%s.", msg.CurrentVersion, msg.LatestVersion)
+		statusMsg := fmt.Sprintf("Prepf update available: v%s → v%s.", msg.CurrentVersion, msg.LatestVersion)
 		if msg.IsDevelopment {
-			statusMsg = fmt.Sprintf("This is a development version of Crush. The latest version is v%s.", msg.LatestVersion)
+			statusMsg = fmt.Sprintf("This is a development version of Prepf. The latest version is v%s.", msg.LatestVersion)
 		}
 		s, statusCmd := a.status.Update(util.InfoMsg{
 			Type: util.InfoTypeUpdate,

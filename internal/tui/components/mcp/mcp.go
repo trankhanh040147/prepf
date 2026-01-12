@@ -6,10 +6,10 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/charmbracelet/crush/internal/agent/tools/mcp"
-	"github.com/charmbracelet/crush/internal/config"
-	"github.com/charmbracelet/crush/internal/tui/components/core"
-	"github.com/charmbracelet/crush/internal/tui/styles"
+	"github.com/trankhanh040147/prepf/internal/agent/tools/mcp"
+	"github.com/trankhanh040147/prepf/internal/config"
+	"github.com/trankhanh040147/prepf/internal/tui/components/core"
+	"github.com/trankhanh040147/prepf/internal/tui/styles"
 )
 
 // RenderOptions contains options for rendering MCP lists.

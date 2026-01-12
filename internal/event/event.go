@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"runtime"
 
-	"github.com/charmbracelet/crush/internal/version"
+	"github.com/trankhanh040147/prepf/internal/version"
 	"github.com/posthog/posthog-go"
 )
 

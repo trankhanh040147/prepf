@@ -9,8 +9,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/charmbracelet/crush/internal/config"
-	"github.com/charmbracelet/crush/internal/csync"
+	"github.com/trankhanh040147/prepf/internal/config"
+	"github.com/trankhanh040147/prepf/internal/csync"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 

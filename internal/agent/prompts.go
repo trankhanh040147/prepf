@@ -4,8 +4,8 @@ import (
 	"context"
 	_ "embed"
 
-	"github.com/charmbracelet/crush/internal/agent/prompt"
-	"github.com/charmbracelet/crush/internal/config"
+	"github.com/trankhanh040147/prepf/internal/agent/prompt"
+	"github.com/trankhanh040147/prepf/internal/config"
 )
 
 //go:embed templates/coder.md.tpl
@@ -16,6 +16,12 @@ var taskPromptTmpl []byte
 
 //go:embed templates/initialize.md.tpl
 var initializePromptTmpl []byte
+
+//go:embed templates/mock.md.tpl
+var mockPromptTmpl []byte
+
+//go:embed templates/gym.md.tpl
+var gymPromptTmpl []byte
 
 func coderPrompt(opts ...prompt.Option) (*prompt.Prompt, error) {
 	systemPrompt, err := prompt.NewPrompt("coder", string(coderPromptTmpl), opts...)
@@ -39,4 +45,20 @@ func InitializePrompt(cfg config.Config) (string, error) {
 		return "", err
 	}
 	return systemPrompt.Build(context.Background(), "", "", cfg)
+}
+
+func mockPrompt(opts ...prompt.Option) (*prompt.Prompt, error) {
+	systemPrompt, err := prompt.NewPrompt("mock", string(mockPromptTmpl), opts...)
+	if err != nil {
+		return nil, err
+	}
+	return systemPrompt, nil
+}
+
+func gymPrompt(opts ...prompt.Option) (*prompt.Prompt, error) {
+	systemPrompt, err := prompt.NewPrompt("gym", string(gymPromptTmpl), opts...)
+	if err != nil {
+		return nil, err
+	}
+	return systemPrompt, nil
 }

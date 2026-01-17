@@ -104,7 +104,7 @@ Automatically loads rules from the `.cursor/rules/` directory. The `rules.mdc` f
 
 # v0.2.0 - Dual Mode Release (Mock & Gym)
 
-**Status:** In Progress
+**Status:** Complete
 
 **Goal:** Experimental release to validate the tool's capability. Both modes are MVP-level to gather feedback before enhancing in future releases.
 
@@ -125,33 +125,33 @@ prepf → Mode Selection → Pre-Mode Instructions → Enter Mode
 
 ### Mode Selection (Shared)
 
-- [ ] **Mode Selector Component:** Bubbletea list with two options (Mock, Gym)
+- [x] **Mode Selector Component:** Bubbletea list with two options (Mock, Gym)
 - [x] **Pre-Mode Input:** Text area for user instructions before entering mode (Use current pre-chat)
 - [x] **File Mention (@):** Support `@filepath` syntax to attach CV/resume/context files (implemented in current base)
 
 ### Mock Mode (The Gauntlet)
 
-- [ ] **System Prompt:** `mock.md.tpl` - Senior Architect persona
+- [x] **System Prompt:** `mock.md.tpl` - Senior Architect persona
   - Penalizes fluff and vague answers
   - Tailors questions based on CV/experience gaps
   - Delivers "The Roast" with actionable feedback
-- [ ] **Session Flow:**
+- [x] **Session Flow:**
   - AI asks technical questions based on context
   - User responds (supports "I don't know" shortcut)
   - AI provides harsh but constructive feedback
-- [ ] **Roast Renderer:** Glamour markdown for feedback display
+- [x] **Roast Renderer:** Glamour markdown for feedback display (uses existing message renderer)
 
 ### Gym Mode (Training)
 
-- [ ] **System Prompt:** `gym.md.tpl` - Drill Instructor persona
+- [x] **System Prompt:** `gym.md.tpl` - Drill Instructor persona
   - Generates targeted practice questions
   - Identifies guessing vs. actual knowledge
   - Corrects misconceptions in real-time
-- [ ] **Session Flow:**
+- [x] **Session Flow:**
   - User chooses topic or lets AI suggest
   - AI generates random drill questions
   - Interactive Q&A with immediate feedback
-- [ ] **Topic Selector:** Optional topic input or "surprise me"
+- [x] **Topic Selector:** Optional topic input or "surprise me" (handled via user input)
 
 ## Prompt Templates
 
@@ -179,12 +179,140 @@ Create new templates in `internal/agent/templates/`:
 
 ---
 
+# Roadmap Overview
+
+| Version | Codename | Focus | Status |
+|---------|----------|-------|--------|
+| v0.1.0 | Foundation | Core infrastructure, CLI, TUI, AI client | ✅ Complete |
+| v0.2.0 | Dual Modes | Mock & Gym MVP, mode selection | 🚧 In Progress |
+| v0.3.0 | Enhanced Feedback | Transcripts, level scaling, progress tracking | 📋 Planned |
+| v0.4.0 | Smart Retention | SRS integration, knowledge graphs | 📋 Planned |
+| v0.5.0 | Document Intelligence | PDF/Resume parsing, context extraction | 📋 Planned |
+| v1.0.0 | Production Ready | Polish, stability, cross-platform release | 📋 Planned |
+
+---
+
 # v0.3.0 - Enhanced Feedback
 
 **Status:** Planned
 
-- Tools & Skills: Implement Tools and Skills to grant LLM more capabilities
+**Goal:** Improve session value through persistent history, adaptive difficulty, and exportable learning artifacts.
 
-- Transcript saving (JSON/Markdown export)
-- Level scaling selector (Junior → Senior → Principal)
-- Session history and progress tracking
+## Features
+
+### Transcript System
+- [ ] **Session Export:** JSON/Markdown export of Q&A sessions
+- [ ] **Structured Output:** Include question, user answer, AI feedback, knowledge gap tags
+- [ ] **Export Commands:** `prepf export <session_id> --format=md|json`
+- [ ] **Auto-Save Option:** Config toggle for automatic transcript saving
+
+### Level Scaling
+- [ ] **Experience Selector:** Junior → Mid → Senior → Staff → Principal
+- [ ] **Adaptive Difficulty:** AI adjusts question complexity based on selected level
+- [ ] **Level-Specific Prompts:** Different personas and expectations per level
+- [ ] **Profile Integration:** Store preferred level in user profile
+
+### Progress Tracking
+- [ ] **Session History:** List past sessions with scores/outcomes
+- [ ] **Knowledge Gaps:** Track weak areas across sessions
+- [ ] **Progress Dashboard:** TUI view showing improvement over time
+- [ ] **Stats Command:** `prepf stats` to view aggregate performance
+
+### Tools & Skills (LLM Enhancement)
+- [ ] **Code Execution:** Run code snippets for live technical demonstrations
+- [ ] **Diagram Generation:** ASCII/Mermaid diagrams for system design questions
+- [ ] **Reference Lookup:** Search documentation during explanations
+
+---
+
+# v0.4.0 - Smart Retention
+
+**Status:** Planned
+
+**Goal:** Implement spaced repetition and knowledge graph features to maximize long-term retention.
+
+## Features
+
+### SRS (Spaced Repetition System)
+- [ ] **Anki-Style Algorithm:** SM-2 or FSRS algorithm for optimal review scheduling
+- [ ] **Question Bank:** Store questions with retention metadata
+- [ ] **Review Mode:** `prepf review` command for daily practice
+- [ ] **Difficulty Ratings:** User self-rates difficulty (Easy/Medium/Hard/Again)
+- [ ] **Due Queue:** Automatically surface questions due for review
+
+### Knowledge Graph
+- [ ] **Topic Mapping:** Track mastery across technical domains
+- [ ] **Prerequisite Chains:** Suggest foundational topics when gaps detected
+- [ ] **Visualization:** TUI-based topic tree showing coverage
+- [ ] **Cross-Domain Links:** Identify connections between technologies
+
+### Misconception Correction
+- [ ] **Pattern Detection:** AI identifies recurring misconceptions
+- [ ] **Correction Log:** Track corrected vs. persistent misconceptions
+- [ ] **Targeted Drills:** Generate questions targeting known weak spots
+
+---
+
+# v0.5.0 - Document Intelligence
+
+**Status:** Planned
+
+**Goal:** Enable rich context extraction from resumes, job descriptions, and technical documents.
+
+## Features
+
+### PDF/Document Parsing
+- [ ] **Resume Parser:** Extract experience, skills, projects from PDF/DOCX
+- [ ] **Job Description Parser:** Extract requirements, tech stack, level expectations
+- [ ] **Structured Extraction:** Convert unstructured docs to queryable data
+
+### Context-Aware Tailoring
+- [ ] **Gap Analysis:** Compare resume skills vs. job requirements
+- [ ] **Targeted Questions:** Focus on experience gaps automatically
+- [ ] **Seniority Detection:** Infer candidate level from experience
+- [ ] **Project Deep-Dive:** Generate questions about specific projects listed
+
+### File Management
+- [ ] **Context Library:** Store and manage uploaded documents
+- [ ] **Document Commands:** `prepf docs add/list/remove`
+- [ ] **Session Context:** Attach specific documents to sessions
+
+---
+
+# v1.0.0 - Production Ready
+
+**Status:** Planned
+
+**Goal:** Stable release with polished UX, comprehensive testing, and cross-platform distribution.
+
+## Features
+
+### Polish & Stability
+- [ ] **Error Recovery:** Graceful handling of network failures, API limits
+- [ ] **Offline Mode:** Basic functionality without internet (review cached questions)
+- [ ] **Performance:** Optimize startup time, memory usage
+- [ ] **Accessibility:** Screen reader support, high contrast themes
+
+### Distribution
+- [ ] **Package Managers:** Homebrew, apt, dnf, pacman, chocolatey
+- [ ] **Binary Releases:** Pre-built binaries for Linux/macOS/Windows
+- [ ] **Container Image:** Docker image for isolated usage
+
+### Enterprise Features
+- [ ] **Team Mode:** Shared question banks, team progress tracking
+- [ ] **Custom Prompts:** User-defined AI personas and evaluation criteria
+- [ ] **API Mode:** Headless execution for CI/automation
+
+---
+
+# Future Considerations (Post v1.0)
+
+These features are being considered for future releases based on user feedback:
+
+- **Voice Mode:** Audio input/output for realistic interview simulation
+- **Collaborative Sessions:** Pair mock interviews with peers
+- **Interview Recording:** Record and playback sessions for review
+- **Company-Specific Prep:** Question banks tailored to specific companies (FAANG, etc.)
+- **Language Support:** Multi-language interview preparation
+- **IDE Integration:** VS Code/Neovim extensions for embedded practice
+- **Mobile Companion:** Quick review app for on-the-go practice

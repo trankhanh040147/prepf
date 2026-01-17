@@ -8,6 +8,7 @@ INSERT INTO sessions (
     completion_tokens,
     cost,
     summary_message_id,
+    mode,
     updated_at,
     created_at
 ) VALUES (
@@ -19,17 +20,18 @@ INSERT INTO sessions (
     ?,
     ?,
     null,
+    ?,
     strftime('%s', 'now'),
     strftime('%s', 'now')
-) RETURNING *;
+) RETURNING id, parent_session_id, title, message_count, prompt_tokens, completion_tokens, cost, updated_at, created_at, summary_message_id, todos, mode;
 
 -- name: GetSessionByID :one
-SELECT *
+SELECT id, parent_session_id, title, message_count, prompt_tokens, completion_tokens, cost, updated_at, created_at, summary_message_id, todos, mode
 FROM sessions
 WHERE id = ? LIMIT 1;
 
 -- name: ListSessions :many
-SELECT *
+SELECT id, parent_session_id, title, message_count, prompt_tokens, completion_tokens, cost, updated_at, created_at, summary_message_id, todos, mode
 FROM sessions
 WHERE parent_session_id is NULL
 ORDER BY updated_at DESC;
@@ -42,9 +44,10 @@ SET
     completion_tokens = ?,
     summary_message_id = ?,
     cost = ?,
-    todos = ?
+    todos = ?,
+    mode = ?
 WHERE id = ?
-RETURNING *;
+RETURNING id, parent_session_id, title, message_count, prompt_tokens, completion_tokens, cost, updated_at, created_at, summary_message_id, todos, mode;
 
 -- name: UpdateSessionTitleAndUsage :exec
 UPDATE sessions

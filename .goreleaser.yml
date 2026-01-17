@@ -70,7 +70,7 @@ builds:
       - goos: windows
         goarch: arm
     ldflags:
-      - -s -w -X github.com/charmbracelet/crush/internal/version.Version={{.Version}}
+      - -s -w -X github.com/charmbracelet/prepf/internal/version.Version={{.Version}}
     flags:
       - -trimpath
 
@@ -125,8 +125,8 @@ aur_sources:
       # bin
       install -Dm755 "./crush" "${pkgdir}/usr/bin/crush"
       # license
-      mkdir -p "${pkgdir}/usr/share/licenses/crush/"
-      install -Dm644 ./LICENSE* "${pkgdir}/usr/share/licenses/crush/"
+      mkdir -p "${pkgdir}/usr/share/licenses/prepf/"
+      install -Dm644 ./LICENSE* "${pkgdir}/usr/share/licenses/prepf/"
       # completions
       mkdir -p "${pkgdir}/usr/share/bash-completion/completions/"
       mkdir -p "${pkgdir}/usr/share/zsh/site-functions/"
@@ -137,8 +137,8 @@ aur_sources:
       # man pages
       install -Dm644 "./manpages/crush.1.gz" "${pkgdir}/usr/share/man/man1/crush.1.gz"
       # readme
-      mkdir -pv "${pkgdir}/usr/share/doc/crush/"
-      install -Dm644 README* "${pkgdir}/usr/share/doc/crush/"
+      mkdir -pv "${pkgdir}/usr/share/doc/prepf/"
+      install -Dm644 README* "${pkgdir}/usr/share/doc/prepf/"
 
 aurs:
   - private_key: "{{ .Env.AUR_KEY }}"
@@ -163,8 +163,8 @@ aurs:
       # bin
       install -Dm755 "./crush" "${pkgdir}/usr/bin/crush"
       # license
-      mkdir -p "${pkgdir}/usr/share/licenses/crush/"
-      install -Dm644 ./LICENSE* "${pkgdir}/usr/share/licenses/crush/"
+      mkdir -p "${pkgdir}/usr/share/licenses/prepf/"
+      install -Dm644 ./LICENSE* "${pkgdir}/usr/share/licenses/prepf/"
       # completions
       mkdir -p "${pkgdir}/usr/share/bash-completion/completions/"
       mkdir -p "${pkgdir}/usr/share/zsh/site-functions/"
@@ -175,8 +175,8 @@ aurs:
       # man pages
       install -Dm644 "./manpages/crush.1.gz" "${pkgdir}/usr/share/man/man1/crush.1.gz"
       # readme
-      mkdir -pv "${pkgdir}/usr/share/doc/crush/"
-      install -Dm644 README* "${pkgdir}/usr/share/doc/crush/"
+      mkdir -pv "${pkgdir}/usr/share/doc/prepf/"
+      install -Dm644 README* "${pkgdir}/usr/share/doc/prepf/"
 
 furies:
   - disable: "{{ if (or .Prerelease .IsNightly) }}true{{ end }}"
@@ -212,7 +212,7 @@ scoops:
 npms:
   - name: "@charmland/crush"
     repository: "git+https://github.com/charmbracelet/crush.git"
-    bugs: https://github.com/charmbracelet/crush/issues
+    bugs: https://github.com/charmbracelet/prepf/issues
     access: public
     disable: "{{ with .Prerelease }}true{{ end }}"
 
@@ -277,8 +277,8 @@ winget:
   - publisher: charmbracelet
     copyright: Charmbracelet, Inc
     publisher_url: https://charm.land
-    release_notes_url: "https://github.com/charmbracelet/crush/releases/tag/{{.Tag}}"
-    license_url: https://github.com/charmbracelet/crush/blob/main/LICENSE.md
+    release_notes_url: "https://github.com/charmbracelet/prepf/releases/tag/{{.Tag}}"
+    license_url: https://github.com/charmbracelet/prepf/blob/main/LICENSE.md
     skip_upload: "{{ with .Prerelease }}true{{ end }}"
     commit_author:
       name: "Charm"

@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/catwalk/pkg/catwalk"
-	"github.com/charmbracelet/crush/internal/agent/hyper"
+	"github.com/trankhanh040147/prepf/internal/agent/hyper"
 	xetag "github.com/charmbracelet/x/etag"
 )
 

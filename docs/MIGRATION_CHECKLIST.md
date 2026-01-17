@@ -72,7 +72,7 @@ This document tracks the migration from `charmbracelet/crush` architecture to `p
 
 ### Update Package Imports
 
-- [x] Replace all `github.com/charmbracelet/crush/internal` → `prepf/internal` (or appropriate package path)
+- [x] Replace all `github.com/charmbracelet/prepf/internal` → `prepf/internal` (or appropriate package path)
 - [x] Update all internal imports in copied files
 - [x] Verify no broken imports remain
 

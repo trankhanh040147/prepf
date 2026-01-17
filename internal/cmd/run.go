@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"strings"
 
-	"github.com/charmbracelet/crush/internal/event"
+	"github.com/trankhanh040147/prepf/internal/event"
 	"github.com/spf13/cobra"
 )
 
@@ -44,7 +44,7 @@ crush run --quiet "Generate a README for this project"
 		defer app.Shutdown()
 
 		if !app.Config().IsConfigured() {
-			return fmt.Errorf("no providers configured - please run 'crush' to set up a provider interactively")
+			return fmt.Errorf("no providers configured - please run 'prepf' to set up a provider interactively")
 		}
 
 		prompt := strings.Join(args, " ")
